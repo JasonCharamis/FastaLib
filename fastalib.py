@@ -67,7 +67,7 @@ class FASTA:
         return fasta_instances
    
         
-    def fasta_sizer ( fasta_file): ## sizer of fasta sequences, takes dictionary as input ##
+    def fasta_sizer ( fasta_file): ## computes size of fasta sequences
         lst = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -81,7 +81,7 @@ class FASTA:
         return sorted_list
 
        
-    def fasta_extract ( fasta_file, gene_list, field = 0 ):
+    def fasta_extract ( fasta_file, gene_list, field = 0 ): ## extract sequences based on provided geneid list, field is for the gene list
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -97,7 +97,7 @@ class FASTA:
             print ( "Gene list is empty or not provided." )
 
             
-    def fasta_remove ( fasta_file, gene_list ):
+    def fasta_remove ( fasta_file, gene_list ): ## remove sequences based on provided geneid list, field is for the gene list
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
