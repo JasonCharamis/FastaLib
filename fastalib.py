@@ -1,6 +1,8 @@
+
 from natsort import natsorted
 import argparse
 import re, os, core
+
 
 def isfile(input_file, field=0):
     # Function to check if input is a file or a string
@@ -15,16 +17,19 @@ def isfile(input_file, field=0):
                 num_columns = len(line.strip().split('\t'))  # Split the first line into columns based on the delimiter
 
                 if num_columns == 1:
-                    glist.append(line.strip())
+                    glist.append(line)
+                    
                 elif num_columns > 1:
                     glist.append(line.split('\t')[field].strip())
 
-            return glist
+            sorted_list = natsorted( glist )
+
+            return sorted_list
 
     elif isinstance(input_file, str):
         glists = input_file
-
     return glists
+    
 
 
 class FASTA:
@@ -32,42 +37,46 @@ class FASTA:
     __slots__ = ['id','seq']
     
     def __init__ (self, header, sequence):
-        self.id = header
-        self.seq = sequence
+        self.id = str(header)
+        self.seq = str(sequence)
         
 
     def __str__ ( self ) :
         return f">{self.id}\n{self.seq}"
-        
+
     
-    def fasta_parser(fasta_file): ## parses fasta and converts multi-line to single-line
+    def fasta_parser(fasta_file, sprint = False):
         fasta_instances = []
 
         with open(fasta_file, 'r') as fasta:
             lines = fasta.readlines()
-            id = ""
+            seqid = ""
             sequence = ""
+            entries = {}
 
             for line in lines:
-                line = line.strip('\n')  # Remove newline characters
-            
+                line = line.strip('\n')  # Remove newline character
+               
                 if line.startswith('>'):
-                    id = line[1:]  # Remove '>' from the ID
-                    fasta_instance = FASTA(id, sequence)
-                    fasta_instances.append(fasta_instance)
+                    seqid = re.sub(".*name=|\-0000\d|\.t\d","", line[1:])
                     sequence = ""
                         
                 elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
                     sequence += re.sub("\*$|\.$","",line)
 
-            if id and sequence:
-                fasta_instance = FASTA(id, sequence)
-                fasta_instances.append(fasta_instance)
+                if seqid and sequence:
+                    entries[seqid]=sequence
 
+        for seqids, sequences in entries.items():
+            fasta_instance = FASTA(seqids, sequences)
+            fasta_instances.append(fasta_instance)
+
+            #        sorted_list = natsorted(fasta_instances, key=lambda instance: getattr(instance, id))
+                    
         return fasta_instances
    
         
-    def fasta_sizer ( fasta_file): ## computes size of fasta sequences
+    def fasta_sizer ( fasta_file): ## sizer of fasta sequences, takes dictionary as input ##
         lst = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -76,20 +85,21 @@ class FASTA:
             fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
             lst.append (fasta_size)
            
-        sorted_list = sorted(lst, key=lambda x: x[1], reverse=True) # sort based on sequence length
+        sorted_list = natsorted(lst, key=lambda x: x[1], reverse=False) # sort based on sequence length
        
         return sorted_list
 
-       
-    def fasta_extract ( fasta_file, gene_list, field = 0 ): ## extract sequences based on provided geneid list, field is for the gene list
+    
+    def fasta_extract(fasta_file, gene_list):
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
-        # Define a custom sorting key function
-        for fasta_instance in fasta_instances:
-            if fasta_instance.id in isfile( gene_list, field ) :
-                subset.append ( fasta_instance ) 
-              
+        if isinstance(isfile(gene_list),list):       
+            subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if re.search(g, fasta_instance.id) ]))
+
+        else:
+            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if re.search(isfile(gene_list), fasta_instance.id) ]))
+
         if len(subset) > 0:            
             return subset
         
@@ -97,19 +107,16 @@ class FASTA:
             print ( "Gene list is empty or not provided." )
 
             
-    def fasta_remove ( fasta_file, gene_list ): ## remove sequences based on provided geneid list, field is for the gene list
+    def fasta_remove ( fasta_file, gene_list ):
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
-        # Define a custom sorting key function
-        for fasta_instance in fasta_instances:            
-            if isfile ( gene_list ):
-                if fasta_instance.id not in isfile ( gene_list ):
-                    subset.append ( fasta_instance )
-            else:
-                if fasta_instance.id != gene_list:
-                    subset.append ( fasta_instance )
-              
+        if isinstance(isfile(gene_list),list):       
+            subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if not re.search(g, fasta_instance.id) ]))
+
+        else:
+            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if not re.search(isfile(gene_list), fasta_instance.id) ]))
+                
         if len(subset) > 0:            
             return subset
         
@@ -153,8 +160,8 @@ def main():
     
     if args.fasta:
 
-        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fasta$","",args.fasta)
-        
+        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fasta$|.1l$","",args.fasta)
+
         if args.one_line:
             with open(f"{inp}.fasta.1l", "w") as f:
                 for out in FASTA.fasta_parser(args.fasta):
@@ -165,18 +172,21 @@ def main():
                 for out in FASTA.fasta_sizer(args.fasta):
                     print ( out, file = f )
 
-        elif args.extract:
+        elif args.extract or args.remove:
             if args.gene_list:
-                with open(f"{inp}.{args.gene_list}.extracted.fasta", "w") as f:
-                    for out in FASTA.fasta_extract(args.fasta, args.gene_list, args.field):
-                        print ( out, file = f )
+                
+                if args.extract:
+                    with open(f"{inp}.{args.gene_list}.extracted.fasta", "w") as f:
+                        for out in FASTA.fasta_extract(args.fasta, args.gene_list):
+                            print ( out, file = f )
+                            
+                elif args.remove:
+                    with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
+                        for out in FASTA.fasta_remove(args.fasta, args.gene_list):
+                            print ( out, file = f )
             else:
-                print ( "Please provide a gene list.")
+                print ( "Please provide a gene list.")               
 
-        elif args.remove:
-            with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
-                for out in FASTA.fasta_remove(args.fasta, args.gene_list, args.field):
-                    print ( out, file = f )
     else:
         print("Please select a potential FASTA operation.")
                
