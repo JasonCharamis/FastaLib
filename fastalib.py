@@ -17,7 +17,7 @@ def isfile(input_file, field=0):
                 num_columns = len(line.strip().split('\t'))  # Split the first line into columns based on the delimiter
 
                 if num_columns == 1:
-                    glist.append(line)
+                    glist.append(line.strip())
                     
                 elif num_columns > 1:
                     glist.append(line.split('\t')[field].strip())
@@ -28,8 +28,9 @@ def isfile(input_file, field=0):
 
     elif isinstance(input_file, str):
         glists = input_file
+
     return glists
-    
+
 
 
 class FASTA:
@@ -89,8 +90,8 @@ class FASTA:
        
         return sorted_list
 
-    
-    def fasta_extract(fasta_file, gene_list):
+       
+     def fasta_extract(fasta_file, gene_list):
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -172,25 +173,23 @@ def main():
                 for out in FASTA.fasta_sizer(args.fasta):
                     print ( out, file = f )
 
-        elif args.extract or args.remove:
+        elif args.extract:
             if args.gene_list:
-                
-                if args.extract:
-                    with open(f"{inp}.{args.gene_list}.extracted.fasta", "w") as f:
-                        for out in FASTA.fasta_extract(args.fasta, args.gene_list):
-                            print ( out, file = f )
-                            
-                elif args.remove:
-                    with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
-                        for out in FASTA.fasta_remove(args.fasta, args.gene_list):
-                            print ( out, file = f )
+                with open(f"{inp}.{args.gene_list}.extracted.fasta", "w") as f:
+                    for out in FASTA.fasta_extract(args.fasta, args.gene_list):
+                        print ( out, file = f )
             else:
-                print ( "Please provide a gene list.")               
-
+                print ( "Please provide a gene list.")
+                
+        elif args.remove:
+            with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
+                for out in FASTA.fasta_remove(args.fasta, args.gene_list, args.field):
+                    print ( out, file = f )
     else:
         print("Please select a potential FASTA operation.")
                
 
 if __name__ == "__main__":
     main()
+
 
