@@ -124,7 +124,59 @@ class FASTA:
         else:
             print ( "Gene list is empty or not provided." )
 
-            
+    def translate(fasta_file):
+        codon2aa = {
+           'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+           'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+           'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+           'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+           'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+           'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+           'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+           'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+           'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+           'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+           'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+           'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+           'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+           'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+           'TAC':'Y', 'TAT':'Y', 'TAA':'', 'TAG':'',
+           'TGC':'C', 'TGT':'C', 'TGA':'', 'TGG':'W'
+       }
+
+       
+        fasta_instances = FASTA.fasta_parser(fasta_file)
+
+        protein_fasta = []
+       
+        for fasta_instance in fasta_instances:
+            fasta_instance.seq = fasta_instance.seq.upper() ## Convert CDS to uppercase
+
+            if not re.search ("A|T|G|C", fasta_instance.seq):
+                print ( fasta_instance.id + " is not a nucleotide sequence. Found other than A,T,G,C." )
+
+            else:
+                aminoacids = []
+    
+                for i in range(0,len(fasta_instance.seq),3):
+                    codon = fasta_instance.seq[i:i+3]
+                    
+                    if codon in codon2aa:
+                        aminoacids.append(codon2aa[codon])
+
+                    else:
+                        aminoacids.append("N")
+
+            protein_sequence = FASTA ( fasta_instance.id, ''.join(aminoacids) )   
+            protein_fasta.append( protein_sequence )
+
+        if len(protein_fasta ) > 0 :
+            return protein_fasta
+
+        else:
+            print ( "Provided fasta file is empty.")
+
+
 
 ## Implementation ##
 
@@ -144,7 +196,10 @@ def kargs():
 
     ## option to compute size of fasta sequences
     parser.add_argument('-s','--size', action="store_true", help='Option to print sizes of FASTA sequences.')
-    
+
+    ## option to convert CDS to PEP 
+    parser.add_argument('-tr','--cds2pep', action="store_true", help='Option to print sizes of FASTA sequences.')   
+        
     args = parser.parse_args()
 
     if not any(vars(args).values()):
@@ -185,6 +240,12 @@ def main():
             with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
                 for out in FASTA.fasta_remove(args.fasta, args.gene_list, args.field):
                     print ( out, file = f )
+               
+        elif args.cds2pep:
+            with open(f"{inp}.pep.fasta", "w") as f:
+                for out in FASTA.translate(args.fasta):
+                    print ( out, file = f )              
+    
     else:
         print("Please select a potential FASTA operation.")
                
