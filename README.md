@@ -1,5 +1,5 @@
 # FastaLib
-Custom Python library for parsing and manipulation of fasta files.
+Custom Python library for parsing and manipulating fasta files.
 
 Includes functions for:
   1. Converting multi-line fasta to one-line fasta
