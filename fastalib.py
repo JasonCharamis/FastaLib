@@ -17,10 +17,10 @@ def isfile(input_file, field=0):
                 num_columns = len(line.strip().split('\t'))  # Split the first line into columns based on the delimiter
 
                 if num_columns == 1:
-                    glist.append(line.strip())
+                    glist.append(line.strip('\n'))
                     
                 elif num_columns > 1:
-                    glist.append(line.split('\t')[field].strip())
+                    glist.append(line.split('\t')[field].strip('\n'))
 
             sorted_list = natsorted( glist )
 
