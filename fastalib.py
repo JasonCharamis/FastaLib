@@ -1,11 +1,10 @@
 
 from natsort import natsorted
 import argparse
-import re, os, core
+import re, os
 
 
-def isfile(input_file, field=0):
-    # Function to check if input is a file or a string
+def isfile(input_file, field=0): # Function to check if input is a file or a string
 
     if os.path.isfile(input_file):
         with open(input_file, "r") as file:
@@ -30,7 +29,6 @@ def isfile(input_file, field=0):
         glists = input_file
 
     return glists
-
 
 
 class FASTA:
@@ -71,9 +69,7 @@ class FASTA:
         for seqids, sequences in entries.items():
             fasta_instance = FASTA(seqids, sequences)
             fasta_instances.append(fasta_instance)
-
-            #        sorted_list = natsorted(fasta_instances, key=lambda instance: getattr(instance, id))
-                    
+                   
         return fasta_instances
    
         
