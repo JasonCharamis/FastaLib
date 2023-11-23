@@ -176,7 +176,7 @@ class FASTA:
 
 ## Implementation ##
 
-def kargs():
+def parse_arguments():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Library for efficiently manipulating fasta files.')
 
@@ -208,7 +208,7 @@ def kargs():
 def main():
     
     parser = argparse.ArgumentParser(description='Library for efficiently manipulating fasta files.')
-    args = kargs()
+    args = parse_arguments()
     
     if args.fasta:
 
