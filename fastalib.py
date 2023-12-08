@@ -191,6 +191,7 @@ class FASTA:
 
         if sequence:                      
             if not position_number > len(sequence.seq) :
+
                 if length > 0:
                     end_position = position_number + length
                     sequences.append(sequence.seq[position_number:end_position])
@@ -205,7 +206,7 @@ class FASTA:
                     return sequence.seq[position_number + length] 
 
             else:
-                print ( f"Requested position number not present in {fasta_instance.name}" )
+                print ( "Requested position number not present in " + sequence.id )
                 return None
         else:
             print ( "Requested sequence does not exist in" + fasta_file )
@@ -290,8 +291,9 @@ def main():
         elif args.position:
             if args.sequence_name:
                 if args.number:
-                    print ( "Sequence in requested site is" )
-                    print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
+                    if FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ):
+                        print ( "Sequence in requested site is" )
+                        print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
                 else:
                     print ("Please provide a position number to return.")
             else:
