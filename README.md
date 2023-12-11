@@ -7,3 +7,4 @@ Includes functions for:
   3. Removing sequences of user-specified genes
   4. Printing length of fasta sequences
   5. Translate CDS to peptide (PEP) sequences
+  6. Extracting subsets of selected sequences
