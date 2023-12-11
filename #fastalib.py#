@@ -34,7 +34,7 @@ def isfile(input_file, field=0): # Function to check if input is a file or a str
 class FASTA:
 
     __slots__ = ['id','seq']
-   
+    
     def __init__ (self, header = "", sequence = ""):
         self.id = str(header)
         self.seq = str(sequence)
@@ -250,6 +250,8 @@ class FASTA:
         '''
         
         fasta_instances = FASTA.fasta_parser(fasta_file)
+
+    for f in fasta
 
         sequence = None
         sequences = []
