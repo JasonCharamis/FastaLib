@@ -1,6 +1,6 @@
 
 from natsort import natsorted
-import xopen
+from xopen import xopen
 import argparse
 import re, os
 
