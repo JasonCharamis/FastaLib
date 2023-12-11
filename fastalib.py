@@ -1,5 +1,6 @@
 
 from natsort import natsorted
+import xopen
 import argparse
 import re, os
 
@@ -48,7 +49,7 @@ class FASTA:
     def fasta_parser(fasta_file, sprint = False):
         fasta_instances = []
 
-        with open(fasta_file, 'r') as fasta:
+        with xopen(fasta_file, 'r') as fasta:
             lines = fasta.readlines()
             seqid = ""
             sequence = ""
@@ -189,7 +190,9 @@ class FASTA:
                 sequence = fasta_instance
                 break
 
-        if sequence:                      
+        if sequence:
+            position_number = position_number + 1 ## counting starts by default at zero
+            
             if not position_number > len(sequence.seq) :
 
                 if length > 0:
