@@ -47,6 +47,20 @@ class FASTA:
 
     
     def fasta_parser(fasta_file, sprint = False):
+
+        '''
+
+        Parse a FASTA file and return a list of FASTA instances.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+        - sprint (bool): If True, print the parsed sequences.
+
+        Returns:
+        - list: List of FASTA instances.
+
+        '''      
+        
         fasta_instances = []
 
         with xopen(fasta_file, 'r') as fasta:
@@ -76,6 +90,17 @@ class FASTA:
     
         
     def fasta_sizer ( fasta_file): ## sizer of fasta sequences, takes dictionary as input ##
+
+        '''
+        Size and sort FASTA sequences based on sequence length.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+
+        Returns:
+        - list: Sorted list of sequence sizes.
+        '''
+        
         lst = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -90,6 +115,17 @@ class FASTA:
 
        
     def fasta_extract(fasta_file, gene_list):
+        '''
+        Extract FASTA sequences based on a gene list.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+        - gene_list (str or list): Path to the gene list file or a list of genes.
+
+        Returns:
+        - list: List of FASTA instances matching the gene list.
+        '''
+        
          subset = []
          fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -107,6 +143,17 @@ class FASTA:
 
             
     def fasta_remove ( fasta_file, gene_list ):
+        '''
+        Remove FASTA sequences based on a gene list.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+        - gene_list (str or list): Path to the gene list file or a list of genes.
+
+        Returns:
+        - list: List of FASTA instances not matching the gene list.
+        '''
+        
         subset = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
@@ -122,7 +169,20 @@ class FASTA:
         else:
             print ( "Gene list is empty or not provided." )
 
+
+            
     def translate(fasta_file):
+
+        '''
+        Translate nucleotide sequences to protein sequences.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA CDS file.
+
+        Returns:
+        - list: List of FASTA instances with translated protein sequences.
+        '''
+        
         codon2aa = {
             'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
             'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
@@ -176,8 +236,19 @@ class FASTA:
 
 
     def check_position (fasta_file, seq_name, position_number, length = 0):
+
         '''
         Returns the sequence from a fasta file, based on position number.
+
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+        - seq_name (str): Name of the sequence.
+        - position_number (int): Position number in the sequence.
+        - length (int): Optional length parameter.
+
+        Returns:
+        - str: Subsequence based on the provided position and length.
+
         '''
         
         fasta_instances = FASTA.fasta_parser(fasta_file)
@@ -206,7 +277,7 @@ class FASTA:
                     return ''.join(sequences)
               
                 else:
-                    return sequence.seq[position_number + length] 
+                    return sequence.seq[position_number + length]
 
             else:
                 print ( "Requested position number not present in " + sequence.id )
@@ -295,7 +366,7 @@ def main():
             if args.sequence_name:
                 if args.number:
                     if FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ):
-                        print ( "Sequence in requested site is" )
+                        print ( "Requested site number", args.number, "in", args.sequence_name, "is", end=" " )
                         print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
                 else:
                     print ("Please provide a position number to return.")
