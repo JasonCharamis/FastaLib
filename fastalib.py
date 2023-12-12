@@ -2,6 +2,7 @@
 from natsort import natsorted
 from xopen import xopen
 import argparse
+import re
 
 
 def isfile(input_file, field=0): # Function to check if input is a file or a string
