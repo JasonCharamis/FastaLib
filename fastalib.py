@@ -85,9 +85,9 @@ class FASTA:
             fasta_instances.append(fasta_instance)
             
         return fasta_instances
-Ι    
-        
-    def fasta_sizer ( fasta_file): ## sizer of fasta sequences, takes dictionary as input ##
+    
+
+    def fasta_sizer ( fasta_file):
 
         '''
         Size and sort FASTA sequences based on sequence length.
@@ -124,20 +124,20 @@ class FASTA:
         - list: List of FASTA instances matching the gene list.
         '''
         
-         subset = []
-         fasta_instances = FASTA.fasta_parser(fasta_file)
-
-         if isinstance(isfile(gene_list),list):       
+        subset = []
+        fasta_instances = FASTA.fasta_parser(fasta_file)
+        
+        if isinstance(isfile(gene_list),list):       
             subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if re.search(g, fasta_instance.id) ]))
 
-         else:
+        else:
             subset = list(set([ fasta_instance for fasta_instance in fasta_instances if re.search(isfile(gene_list), fasta_instance.id) ]))
 
-            if len(subset) > 0:            
-                return subset
+        if len(subset) > 0:            
+            return subset
         
-            else:
-                print ( "Gene list is empty or not provided." )
+        else:
+            print ( "Gene list is empty or not provided." )
 
             
     def fasta_remove ( fasta_file, gene_list ):
