@@ -168,8 +168,7 @@ class FASTA:
         else:
             print ( "Gene list is empty or not provided." )
 
-
-            
+           
     def translate(fasta_file):
 
         '''
@@ -261,7 +260,7 @@ class FASTA:
                 break
 
         if sequence:
-            position_number = position_number + 1 ## counting starts by default at zero
+            position_number -= 1 ## counting starts by default at zero
             
             if not position_number > len(sequence.seq) :
 
@@ -279,10 +278,10 @@ class FASTA:
                     return sequence.seq[position_number + length]
 
             else:
-                print ( "Requested position number not present in " + sequence.id )
+                print ( f"Requested position number not present in {sequence.id}" )
                 return None
         else:
-            print ( "Requested sequence does not exist in" + fasta_file )
+            print ( f"Requested sequence {seq_name} does not exist in {fasta_file}" )
             return None
 
 
@@ -363,7 +362,7 @@ def main():
 
         elif args.position:
             if args.sequence_name:
-                if args.number:
+                if args.number >=0:
                     if FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ):
                         print ( "Requested site number", args.number, "in", args.sequence_name, "is", end=" " )
                         print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
@@ -382,5 +381,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
