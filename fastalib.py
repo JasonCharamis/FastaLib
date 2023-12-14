@@ -1,4 +1,5 @@
 
+import os
 from natsort import natsorted
 from xopen import xopen
 import argparse
@@ -160,7 +161,7 @@ class FASTA:
             subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if not re.search(g, fasta_instance.id) ]))
 
         else:
-            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if not re.search(isfile(gene_list), fasta_instance.id) ]))
+            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if not re.search(gene_list, fasta_instance.id) ]))
             
         if len(subset) > 0:            
             return subset
@@ -352,7 +353,7 @@ def main():
                 
         elif args.remove:
             with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
-                for out in FASTA.fasta_remove(args.fasta, args.gene_list, args.field):
+                for out in FASTA.fasta_remove(args.fasta, args.gene_list):
                     print ( out, file = f )
                     
         elif args.cds2pep:
