@@ -197,6 +197,20 @@ class FASTA:
 
 
     def replace_names ( fasta_file, gene_list ):
+
+        '''
+        Replaces original IDs of fasta sequences with new associated IDs.
+        
+        Parameters:
+        - fasta_file (str): Path to the FASTA file.
+        - gene_list (str): Path to the list of user-specified gene IDs.
+
+        Returns:
+        - fasta: Fasta file with replace IDs for specified sequences.
+        '''
+
+
+        
         fasta_instances = FASTA.fasta_parser ( fasta_file )
 
         new_fasta_instances = []
