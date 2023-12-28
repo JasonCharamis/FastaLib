@@ -91,8 +91,8 @@ class FASTA:
                 elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
                     sequence += re.sub("\*$|\.$", "", re.sub("\W", "", line))
 
-            if seqid and sequence:
-                entries[seqid] = sequence
+                    if seqid and sequence:
+                        entries[seqid] = sequence
 
         for seqids, sequences in entries.items():
             fasta_instance = FASTA(seqids, sequences)
@@ -142,10 +142,16 @@ class FASTA:
         fasta_instances = FASTA.fasta_parser(fasta_file)
         
         if isinstance(isfile(gene_list),list):       
-            subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if re.search(g, fasta_instance.id) ]))
+            subset = list(set([ fasta_instance
+                                for fasta_instance in fasta_instances
+                                for g in isfile(gene_list)
+                                if re.search(g, fasta_instance.id) ]))
 
         else:
-            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if re.search(isfile(gene_list), fasta_instance.id) ]))
+            subset = list(set([ fasta_instance
+                                for fasta_instance in fasta_instances
+                                if re.search(isfile(gene_list), fasta_instance.id)
+                               ]))
 
         if len(subset) > 0:            
             return subset
@@ -170,10 +176,17 @@ class FASTA:
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
         if isinstance(isfile(gene_list),list):       
-            subset = list(set([ fasta_instance for fasta_instance in fasta_instances for g in isfile(gene_list) if not re.search(g, fasta_instance.id) ]))
+            subset = list(set([ fasta_instance
+                                for fasta_instance in fasta_instances
+                                for g in isfile(gene_list)
+                                if not re.search(g, fasta_instance.id)
+                               ]))
 
         else:
-            subset = list(set([ fasta_instance for fasta_instance in fasta_instances if not re.search(gene_list, fasta_instance.id) ]))
+            subset = list(set([ fasta_instance
+                                for fasta_instance in fasta_instances
+                                if not re.search(gene_list, fasta_instance.id)
+                               ]))
             
         if len(subset) > 0:            
             return subset
@@ -181,7 +194,23 @@ class FASTA:
         else:
             print ( "Gene list is empty or not provided." )
 
-           
+
+
+    def replace_names ( fasta_file, gene_list ):
+        fasta_instances = FASTA.fasta_parser ( fasta_file )
+
+        new_fasta_instances = []
+        
+        for fasta_instance in fasta_instances:
+            for g in isfile( gene_list ):
+                if re.search ( fasta_instance.id , g ):
+                    fasta_instance.id = g
+
+            new_fasta_instances.append(fasta_instance)
+
+        return new_fasta_instances
+
+    
     def translate(fasta_file):
 
         '''
@@ -315,6 +344,9 @@ def parse_arguments():
     parser.add_argument('-g','--gene_list', type=str, help='Gene list to extract or FASTA sequences.')
     parser.add_argument('--field', type=int, help='Field to extract geneids from gene_list.')
 
+    ## replace sequence names; original gene ids should be associated with new names
+    parser.add_argument('-nn', '--new_names', action="store_true", help='Option to replace names/IDs of FASTA sequences.')
+
     ## option to compute size of fasta sequences
     parser.add_argument('-s','--size', action="store_true", help='Option to print sizes of FASTA sequences.')
 
@@ -366,6 +398,11 @@ def main():
         elif args.remove:
             with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
                 for out in FASTA.fasta_remove(args.fasta, args.gene_list):
+                    print ( out, file = f )
+
+        elif args.new_names:
+            with open(f"{inp}.new_names.fasta", "w") as f:
+                for out in FASTA.replace_names(args.fasta, args.gene_list):
                     print ( out, file = f )
                     
         elif args.cds2pep:
