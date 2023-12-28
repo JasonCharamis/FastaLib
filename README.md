@@ -8,3 +8,5 @@ Includes functions for:
   4. Printing length of fasta sequences
   5. Translate CDS to peptide (PEP) sequences
   6. Extracting subsets of selected sequences
+  7. Replace sequence IDs
+  8. QC of sequence IDs -- checks for duplicate IDs and for IDs longer than 50 characters (not allowed for making blast databases)
