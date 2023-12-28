@@ -341,7 +341,7 @@ def parse_arguments():
     ## options to extract or remove genes
     parser.add_argument('-e','--extract', action="store_true", help='Option to extract FASTA sequences.')
     parser.add_argument('-r','--remove', action="store_true", help='Option to remove FASTA sequences.')
-    parser.add_argument('-g','--gene_list', type=str, help='Gene list to extract or FASTA sequences.')
+    parser.add_argument('-g','--gene_list', type=str, help='User-provided list of sequence IDs to extract, remove or replace with new in FASTA file.')
     parser.add_argument('--field', type=int, help='Field to extract geneids from gene_list.')
 
     ## replace sequence names; original gene ids should be associated with new names
