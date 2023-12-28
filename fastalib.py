@@ -4,6 +4,7 @@ from natsort import natsorted
 from xopen import xopen
 import argparse
 import re
+from collections import defaultdict
 
 
 def isfile(input_file, field=0): # Function to check if input is a file or a string
@@ -67,20 +68,31 @@ class FASTA:
             lines = fasta.readlines()
             seqid = ""
             sequence = ""
-            entries = {}
+            entries = defaultdict()
+            encountered_ids = set()
 
             for line in lines:
                 line = line.strip('\n')  # Remove newline character
-                
-                if line.startswith('>'):
-                    seqid = re.sub(".*name=|\-0000\d|\.t\d","", line[1:])
-                    sequence = ""
-                    
-                elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
-                    sequence += re.sub("\*$|\.$","",re.sub("\W","",line))
 
-                if seqid and sequence:
-                    entries[seqid]=sequence
+                if line.startswith('>'):
+                    seqid = re.sub("\s+", "_", line[1:])
+                    seqid = re.sub("\r", "\n", line[1:])
+                    sequence = ""
+
+                    if seqid in encountered_ids:
+                        print(f"Error: Duplicate seqid found - '{seqid}'.")
+
+                    else:
+                        encountered_ids.add(seqid)
+
+                    if len(seqid) > 50: # Check if seqid length is greater than 50
+                        print(f"Error: Seqid '{seqid}' has length greater than 50.")
+                            
+                elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
+                    sequence += re.sub("\*$|\.$", "", re.sub("\W", "", line))
+
+            if seqid and sequence:
+                entries[seqid] = sequence
 
         for seqids, sequences in entries.items():
             fasta_instance = FASTA(seqids, sequences)
