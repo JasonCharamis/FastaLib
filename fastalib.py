@@ -101,6 +101,21 @@ class FASTA:
         return fasta_instances
     
 
+    def output_one_by_one ( fasta_file ):
+
+        '''
+        Option to output each sequence one-by-one in a new FASTA file.
+
+        '''
+        
+        fasta_instances = FASTA.fasta_parser ( fasta_file )
+
+        for fasta_instance in fasta_instances:
+
+            with open ( fasta_instance.id, "w" ) as out:
+                out.write ( str(fasta_instance) )
+
+    
     def fasta_sizer ( fasta_file):
 
         '''
@@ -372,6 +387,8 @@ def parse_arguments():
     parser.add_argument('-seq_name','--sequence_name', type=str, help='Name of sequence to return requested position from a number of FASTA sequence.')
     parser.add_argument('-num','--number', type=int, help='Position number to requested sequence from a FASTA sequence.')
     parser.add_argument('-len','--length', type=int, help='Length to add to position number to requested sequence from a FASTA sequence. e.g. 280 + length')
+
+    parser.add_argument('-obo','--one_by_one', action="store_true", help='')
         
     args = parser.parse_args()
 
@@ -395,6 +412,9 @@ def main():
             with open(f"{inp}.fasta.1l", "w") as f:
                 for out in FASTA.fasta_parser(args.fasta):
                     print ( out, file = f )
+
+        elif args.one_by_one:
+            FASTA.output_one_by_one(args.fasta)
 
         elif args.size:
             with open(f"{inp}.fasta.sizes", "w") as f:
