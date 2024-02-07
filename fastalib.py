@@ -302,6 +302,8 @@ class FASTA:
         intact_sequences = []
         intact_sequences_r = []
         subsequences = []
+        start_pos = int()
+        end_pos = int()
         
         for fasta_instance in fasta_instances: ## Find matches between the fasta file and the provided gene list.
             if os.path.isfile(gene_list):
@@ -461,11 +463,11 @@ def main():
                 if args.from_file:
                     with open(f"{inp}.removed.from_file.fasta", "w") as f:
                         for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, from_file = True, extract = False):
-                            print ( out )
+                            print ( out, file = f )
                 else:
-                    with open(f"{inp}.{args.gene_list}.{args.start_position}.{args.end_position}.extracted.fasta", "w") as f:
+                    with open(f"{inp}.removed.fasta", "w") as f:
                         for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, from_file = False, extract = False):
-                            print ( out )
+                            print ( out, file = f )
             else:
                 print ( "Please provide a gene list.")
                 
