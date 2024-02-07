@@ -10,7 +10,7 @@ from collections import defaultdict
 def isfile ( gene_list, delimiter = '\t' ):
     try:
         with open ( gene_list, "r" ) as file:
-            num_columns = len(file.readline().split(delimiter)) ## assuming that each line has the same number of columns            
+            num_columns = len(file.readline().split(delimiter)) ## Assuming that each line has the same number of columns            
             lines = file.readlines()
             
             instances = []
@@ -349,18 +349,17 @@ class FASTA:
                                 subsequence = sequence[:start_pos] + sequence[end_pos:]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
 
-                            elif not start_pos == 1 and end_pos == len(sequence): ## Start   end position is last position in sequence, 
-                                subsequence = sequence[start_pos:]
+                            elif not start_pos == 1 and end_pos == len(sequence): ## If start is in the middle and end position is last position in sequence, keep only up to the start
+                                subsequence = sequence[:start_pos]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
 
-                            elif start_pos == 1 and not end_pos == len(sequence):
+                            elif start_pos == 1 and not end_pos == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
                                 subsequence = sequence[1:end_pos]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
                 else:
                     print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
         else:
             print ('No matching sequences found in fasta file.')
-
 
         if subsequences: ## Extract option enabled and subsequence(s) were extracted
             return subsequences
@@ -391,7 +390,6 @@ def parse_arguments():
     parser.add_argument('-end','--end_position', type=str, required = False, help='End position to extract FASTA sequences.')
     parser.add_argument('-ff','--from_file', action="store_true", help='Option to get start and end positions from file.')
     parser.add_argument('-g','--gene_list', type=str, help='User-provided list of sequence IDs to extract, remove or replace with new in FASTA file.')
-    parser.add_argument('--field', type=int, help='Field to extract geneids from gene_list.')
 
     ## replace sequence names; original gene ids should be associated with new names
     parser.add_argument('-nn', '--new_names', action="store_true", help='Option to replace names/IDs of FASTA sequences.')
