@@ -302,9 +302,8 @@ class FASTA:
         intact_sequences = []
         intact_sequences_r = []
         subsequences = []
-        chkp = ''
         
-        for fasta_instance in fasta_instances:
+        for fasta_instance in fasta_instances: ## Find matches between the fasta file and the provided gene list.
             if os.path.isfile(gene_list):
                 for gene in isfile(gene_list):
                     if len(gene.split('\t')) > 1:
@@ -315,9 +314,9 @@ class FASTA:
                             matches[fasta_instance.id] = fasta_instance.seq
 
         if len(matches) > 0:
-            intact_sequences = [fasta_instance for fasta_instance in fasta_instances if fasta_instance.id not in matches.keys()]
+            intact_sequences = [fasta_instance for fasta_instance in fasta_instances if fasta_instance.id not in matches.keys()] ## Creates a list with all sequences NOT matching the gene list ONCE. Isolates the sequences we want to remove from the file.
                     
-            for matching_seq, positions in matches.items():
+            for matching_seq, positions in matches.items(): ## Create dictionaries to save the fasta ID, start, end positions and sequence of matching sequences.
                 if isinstance(positions, dict):                   
                     for start_positions, end_positions in positions.items():
                         start_position = int(start_positions)
@@ -326,32 +325,31 @@ class FASTA:
                             end_position = int(end_positions)
                             sequence = str(sequences)
 
-                elif isinstance(positions, str):
+                elif isinstance(positions, str): ## Provided gene list is a string, NOT a file
                     sequence = positions
                     start_position = 1
                     end_position = len(sequence)
 
-                if start_position and end_position and sequence:
-
-                    chkp = 'try'
+                if start_position and end_position and sequence: 
                     
                     if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
-                        if extract:
+                        
+                        if extract:  ## Options to extract sequence(s) and subsequence(s)
                             subsequence = sequence[start_position:end_position]
                             subsequences.append(str('>'+matching_seq+'\n'+subsequence))
                                          
-                        else:
-                            if start_position > 1:
+                        else: ## Options to remove sequence(s) and subsequence(s)
+                            if start_position > 1: 
                                 start_pos = start_position - 1
                 
                             if end_position < len(sequence):
                                 end_pos = end_position + 1
                                 
-                            if not start_pos == 1 and not end_pos == len(sequence):
+                            if not start_pos == 1 and not end_pos == len(sequence): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
                                 subsequence = sequence[:start_pos] + sequence[end_pos:]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
 
-                            elif not start_pos == 1 and end_pos == len(sequence):
+                            elif not start_pos == 1 and end_pos == len(sequence): ## Start   end position is last position in sequence, 
                                 subsequence = sequence[start_pos:]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
 
@@ -363,15 +361,15 @@ class FASTA:
         else:
             print ('No matching sequences found in fasta file.')
 
-            
-        if subsequences:
+
+        if subsequences: ## Extract option enabled and subsequence(s) were extracted
             return subsequences
 
-        elif len(intact_sequences_r) > 0 and not subsequences:
+        elif len(intact_sequences_r) > 0 and not subsequences: ## Remove option enabled and subsequence(s) were removed
             intact_sequences_r = intact_sequences_r + intact_sequences
             return intact_sequences_r
             
-        elif intact_sequences and not subsequences and not intact_sequences_r:
+        elif intact_sequences and not subsequences and not intact_sequences_r: ## Remove option enabled for entire sequence(s)
             return intact_sequences
 
  
