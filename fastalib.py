@@ -358,8 +358,12 @@ class FASTA:
                             elif start_pos == 1 and not end_pos == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
                                 subsequence = sequence[1:end_pos]
                                 intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
+                    else:
+                        print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
+
                 else:
-                    print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
+                    print (f"Start and end positions not provided for {matching_seq}.")
+                
         else:
             print ('No matching sequences found in fasta file.')
 
