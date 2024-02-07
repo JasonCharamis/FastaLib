@@ -7,31 +7,22 @@ import re
 from collections import defaultdict
 
 
-def isfile(input_file, field=0): # Function to check if input is a file or a string
-
-    if os.path.isfile(input_file):
-        with open(input_file, "r") as file:
-            # Check if single or multi-column file, if latter is true select the one with gene list (good for using in associative lists of genes)
+def isfile ( gene_list, delimiter = '\t' ):
+    try:
+        with open ( gene_list, "r" ) as file:
+            num_columns = len(file.readline().split(delimiter)) ## assuming that each line has the same number of columns            
             lines = file.readlines()
-            glist = []
-
+            
+            instances = []
+            
             for line in lines:
-                num_columns = len(line.strip().split('\t'))  # Split the first line into columns based on the delimiter
+                instances.append(line)
 
-                if num_columns == 1:
-                    glist.append(line.strip('\n'))
-                    
-                elif num_columns > 1:
-                    glist.append(line.split('\t')[field].strip('\n'))
+    except FileNotFoundError:    
+        instances = gene_list
 
-            sorted_list = natsorted( glist )
+    return instances
 
-            return sorted_list
-
-    elif isinstance(input_file, str):
-        glists = input_file
-
-    return glists
 
 
 class FASTA:
@@ -47,7 +38,7 @@ class FASTA:
         return f">{self.id}\n{self.seq}"
     
 
-    def fasta_parser(fasta_file, sprint = False):
+    def fasta_parser(fasta_file, sprint = False) -> list:
 
         '''
 
@@ -116,8 +107,8 @@ class FASTA:
                 out.write ( str(fasta_instance) )
 
     
-    def fasta_sizer ( fasta_file):
-
+    def fasta_sizer ( fasta_file) -> list:
+        
         '''
         Size and sort FASTA sequences based on sequence length.
 
@@ -126,6 +117,7 @@ class FASTA:
 
         Returns:
         - list: Sorted list of sequence sizes.
+        
         '''
         
         lst = []
@@ -141,77 +133,7 @@ class FASTA:
         return sorted_list
 
        
-    def fasta_extract(fasta_file, gene_list):
-        '''
-        Extract FASTA sequences based on a gene list.
-
-        Parameters:
-        - fasta_file (str): Path to the FASTA file.
-        - gene_list (str or list): Path to the gene list file or a list of genes.
-
-        Returns:
-        - list: List of FASTA instances matching the gene list.
-        '''
-        
-        subset = []
-        fasta_instances = FASTA.fasta_parser(fasta_file)
-        
-        if isinstance(isfile(gene_list),list):       
-            subset = list(set([ fasta_instance
-                                for fasta_instance in fasta_instances
-                                for g in isfile(gene_list)
-                                if re.search(g, fasta_instance.id) ]))
-
-        else:
-            subset = list(set([ fasta_instance
-                                for fasta_instance in fasta_instances
-                                if re.search(isfile(gene_list), fasta_instance.id)
-                               ]))
-
-        if len(subset) > 0:            
-            return subset
-        
-        else:
-            print ( "Gene list is empty or not provided." )
-
-            
-    def fasta_remove ( fasta_file, gene_list ):
-        '''
-        Remove FASTA sequences based on a gene list.
-
-        Parameters:
-        - fasta_file (str): Path to the FASTA file.
-        - gene_list (str or list): Path to the gene list file or a list of genes.
-
-        Returns:
-        - list: List of FASTA instances not matching the gene list.
-        '''
-        
-        subset = []
-        fasta_instances = FASTA.fasta_parser(fasta_file)
-
-        if isinstance(isfile(gene_list),list):       
-            subset = list(set([ fasta_instance
-                                for fasta_instance in fasta_instances
-                                for g in isfile(gene_list)
-                                if not re.search(g, fasta_instance.id)
-                               ]))
-
-        else:
-            subset = list(set([ fasta_instance
-                                for fasta_instance in fasta_instances
-                                if not re.search(gene_list, fasta_instance.id)
-                               ]))
-            
-        if len(subset) > 0:            
-            return subset
-        
-        else:
-            print ( "Gene list is empty or not provided." )
-
-
-
-    def replace_names ( fasta_file, gene_list ):
+    def replace_names ( fasta_file, gene_list ) -> list:
 
         '''
         Replaces original IDs of fasta sequences with new associated IDs.
@@ -222,10 +144,9 @@ class FASTA:
 
         Returns:
         - fasta: Fasta file with replace IDs for specified sequences.
-        '''
-
-
         
+        '''
+       
         fasta_instances = FASTA.fasta_parser ( fasta_file )
 
         new_fasta_instances = []
@@ -240,7 +161,7 @@ class FASTA:
         return new_fasta_instances
 
     
-    def translate(fasta_file):
+    def translate(fasta_file) -> list:
 
         '''
         Translate nucleotide sequences to protein sequences.
@@ -250,6 +171,7 @@ class FASTA:
 
         Returns:
         - list: List of FASTA instances with translated protein sequences.
+        
         '''
         
         codon2aa = {
@@ -304,19 +226,19 @@ class FASTA:
             print ( "Provided fasta file is empty.")
 
 
-    def check_position (fasta_file, seq_name, position_number, length = 0):
+    def check_position (fasta_file, gene_list, position_number, length = 0) -> str:
 
         '''
         Returns the sequence from a fasta file, based on position number.
 
         Parameters:
-        - fasta_file (str): Path to the FASTA file.
-        - seq_name (str): Name of the sequence.
-        - position_number (int): Position number in the sequence.
-        - length (int): Optional length parameter.
+          - fasta_file (str): Path to the FASTA file.
+          - gene_list (str): Name of the sequence.
+          - position_number (int): Position number in the sequence.
+          - length (int): Optional length parameter.
 
         Returns:
-        - str: Subsequence based on the provided position and length.
+          - str: Subsequence based on the provided position and length.
 
         '''
         
@@ -326,7 +248,7 @@ class FASTA:
         sequences = []
 
         for fasta_instance in fasta_instances:
-            if re.search(seq_name, fasta_instance.id):
+            if re.search(gene_list, fasta_instance.id):
                 sequence = fasta_instance
                 break
 
@@ -352,10 +274,107 @@ class FASTA:
                 print ( f"Requested position number not present in {sequence.id}" )
                 return None
         else:
-            print ( f"Requested sequence {seq_name} does not exist in {fasta_file}" )
+            print ( f"Requested sequence {gene_list} does not exist in {fasta_file}" )
             return None
 
 
+        
+    def extract_subsequences (fasta_file, gene_list, from_file, start_position="", end_position="", extract = True) -> list:
+
+        '''
+        Extracts or removes sequence(s) and subsequence(s) from a fasta file
+
+        Parameters:
+          - fasta_file (str): Path to the FASTA file.
+          - gene_list (str): Name of file with provided sequence(s).
+          - from_file(bool): True if the sequences' names, start and end positions are provided in a file. False if sequence name, start and position are provided as a string.
+          - start_position(int): Start position in the sequence. Default: empty_string
+          - end_position(int): End position in the sequence. Default: empty_string
+          - extract(bool): Extract or remove subsequence(s). Default: extract=True
+ 
+        Returns:
+          - list: List of sequences based on options to extract or remove entire sequence(s) and subsequence(s).
+
+        '''
+        
+        fasta_instances = FASTA.fasta_parser(fasta_file)
+        matches = defaultdict(lambda: defaultdict(lambda: defaultdict(str)))
+        intact_sequences = []
+        intact_sequences_r = []
+        subsequences = []
+        chkp = ''
+        
+        for fasta_instance in fasta_instances:
+            if os.path.isfile(gene_list):
+                for gene in isfile(gene_list):
+                    if len(gene.split('\t')) > 1:
+                        if re.search(gene.split('\t')[0], fasta_instance.id):
+                            matches[fasta_instance.id][gene.split('\t')[1]][gene.split('\t')[2]] = fasta_instance.seq
+                    else:
+                        if re.search(gene, fasta_instance.id):
+                            matches[fasta_instance.id] = fasta_instance.seq
+
+        if len(matches) > 0:
+            intact_sequences = [fasta_instance for fasta_instance in fasta_instances if fasta_instance.id not in matches.keys()]
+                    
+            for matching_seq, positions in matches.items():
+                if isinstance(positions, dict):                   
+                    for start_positions, end_positions in positions.items():
+                        start_position = int(start_positions)
+
+                        for end_positions, sequences in end_positions.items():
+                            end_position = int(end_positions)
+                            sequence = str(sequences)
+
+                elif isinstance(positions, str):
+                    sequence = positions
+                    start_position = 1
+                    end_position = len(sequence)
+
+                if start_position and end_position and sequence:
+
+                    chkp = 'try'
+                    
+                    if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
+                        if extract:
+                            subsequence = sequence[start_position:end_position]
+                            subsequences.append(str('>'+matching_seq+'\n'+subsequence))
+                                         
+                        else:
+                            if start_position > 1:
+                                start_pos = start_position - 1
+                
+                            if end_position < len(sequence):
+                                end_pos = end_position + 1
+                                
+                            if not start_pos == 1 and not end_pos == len(sequence):
+                                subsequence = sequence[:start_pos] + sequence[end_pos:]
+                                intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
+
+                            elif not start_pos == 1 and end_pos == len(sequence):
+                                subsequence = sequence[start_pos:]
+                                intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
+
+                            elif start_pos == 1 and not end_pos == len(sequence):
+                                subsequence = sequence[1:end_pos]
+                                intact_sequences_r.append(str('>'+matching_seq+'\n'+subsequence))
+                else:
+                    print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
+        else:
+            print ('No matching sequences found in fasta file.')
+
+            
+        if subsequences:
+            return subsequences
+
+        elif len(intact_sequences_r) > 0 and not subsequences:
+            intact_sequences_r = intact_sequences_r + intact_sequences
+            return intact_sequences_r
+            
+        elif intact_sequences and not subsequences and not intact_sequences_r:
+            return intact_sequences
+
+ 
 
 ## Implementation ##
 
@@ -370,6 +389,9 @@ def parse_arguments():
     ## options to extract or remove genes
     parser.add_argument('-e','--extract', action="store_true", help='Option to extract FASTA sequences.')
     parser.add_argument('-r','--remove', action="store_true", help='Option to remove FASTA sequences.')
+    parser.add_argument('-st','--start_position', type=str, required = False, help='Start position to extract FASTA sequences.')
+    parser.add_argument('-end','--end_position', type=str, required = False, help='End position to extract FASTA sequences.')
+    parser.add_argument('-ff','--from_file', action="store_true", help='Option to get start and end positions from file.')
     parser.add_argument('-g','--gene_list', type=str, help='User-provided list of sequence IDs to extract, remove or replace with new in FASTA file.')
     parser.add_argument('--field', type=int, help='Field to extract geneids from gene_list.')
 
@@ -384,12 +406,13 @@ def parse_arguments():
 
     ## get sequence based on position number
     parser.add_argument('-pos','--position', action="store_true", help='Option to return requested position number of FASTA sequence.')
-    parser.add_argument('-seq_name','--sequence_name', type=str, help='Name of sequence to return requested position from a number of FASTA sequence.')
+    parser.add_argument('-gene_list','--sequence_name', type=str, help='Name of sequence to return requested position from a number of FASTA sequence.')
     parser.add_argument('-num','--number', type=int, help='Position number to requested sequence from a FASTA sequence.')
     parser.add_argument('-len','--length', type=int, help='Length to add to position number to requested sequence from a FASTA sequence. e.g. 280 + length')
 
-    parser.add_argument('-obo','--one_by_one', action="store_true", help='')
-        
+    parser.add_argument('-obo','--one_by_one', action="store_true", help='Print all fasta sequences one-by-one.')
+
+    
     args = parser.parse_args()
 
     if not any(vars(args).values()):
@@ -403,7 +426,9 @@ def main():
     
     parser = argparse.ArgumentParser(description='Library for efficiently manipulating fasta files.')
     args = parse_arguments()
-    
+
+    threads = []
+
     if args.fasta:
 
         inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fasta$|.1l$","",args.fasta)
@@ -423,17 +448,31 @@ def main():
 
         elif args.extract:
             if args.gene_list:
-                with open(f"{inp}.{args.gene_list}.extracted.fasta", "w") as f:
-                    for out in FASTA.fasta_extract(args.fasta, args.gene_list):
-                        print ( out, file = f )
+                if args.from_file:
+                    with open(f"{inp}.extracted.from_file.fasta", "w") as f:
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, from_file = True):
+                            print ( out )
+                else:
+                    with open(f"{inp}.{args.gene_list}.{args.start_position}.{args.end_position}.extracted.fasta", "w") as f:
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, from_file = False):
+                            print ( out, file = f )
+
+            else:
+                print ( "Please provide a gene list.")
+                                        
+        elif args.remove:
+            if args.gene_list:
+                if args.from_file:
+                    with open(f"{inp}.removed.from_file.fasta", "w") as f:
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, from_file = True, extract = False):
+                            print ( out )
+                else:
+                    with open(f"{inp}.{args.gene_list}.{args.start_position}.{args.end_position}.extracted.fasta", "w") as f:
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, from_file = False, extract = False):
+                            print ( out )
             else:
                 print ( "Please provide a gene list.")
                 
-        elif args.remove:
-            with open(f"{inp}.{args.gene_list}.removed.fasta", "w") as f:
-                for out in FASTA.fasta_remove(args.fasta, args.gene_list):
-                    print ( out, file = f )
-
         elif args.new_names:
             with open(f"{inp}.new_names.fasta", "w") as f:
                 for out in FASTA.replace_names(args.fasta, args.gene_list):
@@ -448,13 +487,12 @@ def main():
             if args.sequence_name:
                 if args.number >=0:
                     if FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ):
-                        print ( "Requested site number", args.number, "in", args.sequence_name, "is", end=" " )
+                        print ( "Requested site number", args.number, "in", args.sequence_name, "is", args.end==" " )
                         print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
                 else:
                     print ("Please provide a position number to return.")
             else:
-                print ( "Please provide the name of the sequence to search for returning the position number.")
-
+                print ( "Please provide the name of the sequence to search for returning the position number.")        
                 
         else:
             print("Please select a potential FASTA operation.")
