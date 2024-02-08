@@ -470,7 +470,7 @@ def main():
             with open(f"{inp}.fasta.1l", "w") as f:
                 for out in FASTA.fasta_parser(args.fasta):
                     print ( out, file = f )
-
+                    
         elif args.one_by_one:
             FASTA.output_one_by_one(args.fasta)
 
@@ -541,17 +541,15 @@ def main():
                     if FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ):
                         print ( "Requested site number", args.number, "in", args.sequence_name, "is", args.end==" " )
                         print ( FASTA.check_position ( args.fasta, args.sequence_name, args.number, args.length if args.length else 0 ) )
+                        
                 else:
                     print ("Please provide a position number to return.")
             else:
-                print ( "Please provide the name of the sequence to search for returning the position number.")        
-                
+                print ( "Please provide the name of the sequence to search for returning the position number.")                        
         else:
             print("Please select a potential FASTA operation.")
-
     else:
         print ( "Please provide the input fasta file.")
         
-
 if __name__ == "__main__":
     main()
