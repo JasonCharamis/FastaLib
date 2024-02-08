@@ -105,7 +105,6 @@ class FASTA:
         fasta_instances = FASTA.fasta_parser ( fasta_file )
 
         for fasta_instance in fasta_instances:
-
             with open ( fasta_instance.id, "w" ) as out:
                 out.write ( str(fasta_instance) )
 
@@ -158,13 +157,12 @@ class FASTA:
             for g in isfile( gene_list ):
                 if re.search ( fasta_instance.id , g ):
                     fasta_instance.id = g
-
             new_fasta_instances.append(fasta_instance)
 
         return new_fasta_instances
 
     
-    def translate(fasta_file) -> list:
+    def translate ( fasta_file ) -> list:
 
         '''
         Translate nucleotide sequences to protein sequences.
@@ -268,7 +266,6 @@ class FASTA:
                         print (f'Please the format of your input {gene_list} file.')
 
             elif isinstance(gene_list, str): ## Provided gene list is a string, NOT a file
-
                 if start_position == "": ## If no start and/or end positions are provided, return the entire sequence
                     start_position = 1
                     
@@ -338,7 +335,6 @@ class FASTA:
                     extracted_sequences.append(fasta_sequence)            
             return subsequences
 
-
         elif len(intact_sequences_r) > 0 and not subsequences: ## Remove option enabled and subsequence(s) were removed           
             intact_sequences_r = intact_sequences_r + intact_sequences
             
@@ -349,7 +345,6 @@ class FASTA:
                 else:
                     kept_sequences.append(fasta_sequence)
             return kept_sequences
-
         
         elif intact_sequences and not subsequences and not intact_sequences_r: ## Remove option enabled for entire sequence(s)
             for fasta_sequence in intact_sequences:
