@@ -277,14 +277,11 @@ class FASTA:
 
                 if re.search(gene_list, fasta_instance.id):
                     matches[fasta_instance.id][start_position][end_position] = fasta_instance.seq
-
             else:
                 print ('Provided file is neither a FILE nor a STRING. Please check your input.')
                 return fasta_instances
 
-                    
-        if len(matches) > 0: ## If matches are found, extract or remove entire sequence(s) or subsequence(s) based on user-provided specifications
-            
+        if len(matches) > 0: ## If matches are found, extract or remove entire sequence(s) or subsequence(s) based on user-provided specifications            
             intact_sequences = [fasta_instance for fasta_instance in fasta_instances if fasta_instance.id not in matches.keys()] ## Creates a list with all sequences NOT matching the gene list ONCE. Isolates the sequences we want to remove from the file.
                     
             for matching_seq, positions in matches.items(): ## Create dictionaries to save the fasta ID, start, end positions and sequence of matching sequences.
@@ -297,9 +294,7 @@ class FASTA:
                             sequence = str(sequences)                          
         
                 if start_position and end_position and sequence: 
-                    
                     if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
-                        
                         if extract:  ## Options to extract sequence(s) and subsequence(s)
                             subsequence = sequence[start_position:end_position]
                             subsequences.append( FASTA(matching_seq, subsequence) )
@@ -322,7 +317,6 @@ class FASTA:
                             elif start_pos == 1 and not end_pos == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
                                 subsequence = sequence[1:end_pos]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
-                                    
                     else:
                         print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
                 else:
@@ -330,7 +324,6 @@ class FASTA:
         else:
             print ('No matching sequences found in fasta file.')
             return fasta_instances
-            
             
         ## Size filtering here, if ncbi_tsa_submission is enabled to avoid doing multiple times in the loop
         extracted_sequences = []
@@ -341,23 +334,20 @@ class FASTA:
                 if ncbi_tsa_submission == True:
                     if len(fasta_sequence.seq) >= 200:
                         extracted_sequences.append(fasta_sequence)
-
                 else:
-                    extracted_sequences.append(fasta_sequence)    
-                        
+                    extracted_sequences.append(fasta_sequence)            
             return subsequences
 
 
         elif len(intact_sequences_r) > 0 and not subsequences: ## Remove option enabled and subsequence(s) were removed           
             intact_sequences_r = intact_sequences_r + intact_sequences
-
+            
             for fasta_sequence in intact_sequences_r:
                 if ncbi_tsa_submission == True:
                     if len(fasta_sequence.seq) >= 200:
                         kept_sequences.append(fasta_sequence)
                 else:
                     kept_sequences.append(fasta_sequence)
-    
             return kept_sequences
 
         
@@ -368,10 +358,9 @@ class FASTA:
                         kept_sequences.append(fasta_sequence)
                 else:
                     kept_sequences.append(fasta_sequence)
-            
             return kept_sequences
 
-
+        
 
     def check_position (fasta_file, gene_list, position_number, length = 0) -> str:
 
@@ -413,13 +402,14 @@ class FASTA:
                     start_position = position_number - length
                     sequences.append(sequence.seq[start_position:position_number])
                     return ''.join(sequences)
-              
+                
                 else:
                     return sequence.seq[position_number + length]
-
+                
             else:
                 print ( f"Requested position number not present in {sequence.id}" )
                 return None
+            
         else:
             print ( f"Requested sequence {gene_list} does not exist in {fasta_file}" )
             return None
