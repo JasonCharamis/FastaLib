@@ -1,5 +1,4 @@
 
-
 #!/usr/bin python3
 
 import os
@@ -321,39 +320,45 @@ class FASTA:
         else:
             print ('No matching sequences found in fasta file.')
             return fasta_instances
-            
+
+        
         ## Size filtering here, if ncbi_tsa_submission is enabled to avoid doing multiple times in the loop
-        extracted_sequences = []
-        kept_sequences = []              
         
         if subsequences: ## Extract option enabled and subsequence(s) were extracted
-            for fasta_sequence in subsequences:
-                if ncbi_tsa_submission == True:
-                    if len(fasta_sequence.seq) >= 200:
-                        extracted_sequences.append(fasta_sequence)
-                else:
-                    extracted_sequences.append(fasta_sequence)            
-            return subsequences
+            if ncbi_tsa_submission == True:
+                extracted_sequences = []
+                
+                for fasta_sequence in subsequences and if len(fasta_sequence.seq) >= 200:
+                    extracted_sequences.append(fasta_sequence)
+                    return extracted_sequences
+                
+            else:    
+                return subsequences
 
         elif len(intact_sequences_r) > 0 and not subsequences: ## Remove option enabled and subsequence(s) were removed           
             intact_sequences_r = intact_sequences_r + intact_sequences
-            
-            for fasta_sequence in intact_sequences_r:
-                if ncbi_tsa_submission == True:
-                    if len(fasta_sequence.seq) >= 200:
-                        kept_sequences.append(fasta_sequence)
-                else:
+
+            if ncbi_tsa_submission == True:
+                kept_sequences = []
+                
+                for fasta_sequence in intact_sequences_r and if len(fasta_sequence.seq) >= 200:
                     kept_sequences.append(fasta_sequence)
-            return kept_sequences
+                    return kept_sequences
+                
+            else:
+                return intact_sequences_r
+                        
         
         elif intact_sequences and not subsequences and not intact_sequences_r: ## Remove option enabled for entire sequence(s)
-            for fasta_sequence in intact_sequences:
-                if ncbi_tsa_submission == True:
-                    if len(fasta_sequence.seq) >= 200:
-                        kept_sequences.append(fasta_sequence)
-                else:
+            if ncbi_tsa_submission == True:
+                kept_sequences = []              
+
+                for fasta_sequence in intact_sequences and if len(fasta_sequence.seq) >= 200:
                     kept_sequences.append(fasta_sequence)
-            return kept_sequences
+                    return kept_sequences
+                
+            else:
+                return intact_sequences
 
         
 
