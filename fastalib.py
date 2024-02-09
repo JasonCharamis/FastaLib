@@ -134,7 +134,7 @@ class FASTA:
         return sorted_list
 
        
-    def replace_names ( fasta_file, gene_list ) -> list:
+    def replace_names ( fasta_file, gene_list="", ncbi_tsa_submission = False ) -> list:
 
         '''
         Replaces original IDs of fasta sequences with new associated IDs.
@@ -153,10 +153,16 @@ class FASTA:
         new_fasta_instances = []
         
         for fasta_instance in fasta_instances:
-            for g in isfile( gene_list ):
-                if re.search ( fasta_instance.id , g ):
-                    fasta_instance.id = g
-            new_fasta_instances.append(fasta_instance)
+
+            if ncbi_tsa_submission == True:
+                fasta_instance.id = fasta_instance.id + ' [moltype=transcribed_RNA]'
+                new_fasta_instances.append(fasta_instance)
+
+            elif gene_list:
+                for g in isfile( gene_list ):
+                    if re.search ( fasta_instance.id , g ):
+                        fasta_instance.id = g
+                        new_fasta_instances.append(fasta_instance)
 
         return new_fasta_instances
 
@@ -323,11 +329,13 @@ class FASTA:
 
         
         ## Size filtering here, if ncbi_tsa_submission is enabled to avoid doing multiple times in the loop
+
+        extracted_sequences = []
+        kept_sequences = []
         
         if subsequences: ## Extract option enabled and subsequence(s) were extracted
-            if ncbi_tsa_submission == True:
-                extracted_sequences = []
-                
+            
+            if ncbi_tsa_submission == True:                
                 for fasta_sequence in subsequences:
                     if len(fasta_sequence.seq) >= 200:
                         extracted_sequences.append(fasta_sequence)
@@ -336,29 +344,27 @@ class FASTA:
             else:    
                 return subsequences
 
+            
         elif len(intact_sequences_r) > 0 and not subsequences: ## Remove option enabled and subsequence(s) were removed           
             intact_sequences_r = intact_sequences_r + intact_sequences
 
             if ncbi_tsa_submission == True:
-                kept_sequences = []
-                
                 for fasta_sequence in intact_sequences_r:
                     if len(fasta_sequence.seq) >= 200:
                         kept_sequences.append(fasta_sequence)
-                        return kept_sequences
+                return kept_sequences
                 
             else:
                 return intact_sequences_r
                         
         
         elif intact_sequences and not subsequences and not intact_sequences_r: ## Remove option enabled for entire sequence(s)
+            
             if ncbi_tsa_submission == True:
-                kept_sequences = []              
-
                 for fasta_sequence in intact_sequences:
                     if len(fasta_sequence.seq) >= 200:
                         kept_sequences.append(fasta_sequence)
-                        return kept_sequences
+                return kept_sequences
                 
             else:
                 return intact_sequences
@@ -472,7 +478,7 @@ def main():
 
     if args.fasta:
 
-        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fasta$|.1l$","",args.fasta)
+        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$","",args.fasta)
 
         if args.one_line:
             with open(f"{inp}.fasta.1l", "w") as f:
@@ -534,10 +540,20 @@ def main():
                 print ( "Please provide a gene list.")
                 
         elif args.new_names:
-            with open(f"{inp}.new_names.fasta", "w") as f:
-                for out in FASTA.replace_names(args.fasta, args.gene_list):
-                    print ( out, file = f )
-                    
+
+            if args.ncbi_tsa_submission:
+                with open(f"{inp}.ncbi_tsa_submission.fsa", "w") as f:
+                    for out in FASTA.replace_names(args.fasta, ncbi_tsa_submission = True):
+                        print ( out, file = f )
+
+            elif args.gene_list:
+                with open(f"{inp}.new_names.fasta", "w") as f:
+                    for out in FASTA.replace_names(args.fasta, args.gene_list):
+                        print ( out, file = f )
+                        
+            else:
+                print ( 'Please select a valid option for renaming fasta sequences: --ncbi_tsa_submission or --gene_list.')        
+                        
         elif args.cds2pep:
             with open(f"{inp}.pep.fasta", "w") as f:
                 for out in FASTA.translate(args.fasta):
