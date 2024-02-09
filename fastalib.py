@@ -268,7 +268,7 @@ class FASTA:
                         if re.search(gene, fasta_instance.id):
                             matches[fasta_instance.id] = fasta_instance.seq
                     else:
-                        print (f'Please the format of your input {gene_list} file.')
+                        print (f'Please check the format of your input {gene_list} file: neither 1 nor 3 columns (geneid, start, end position) .')
 
             elif isinstance(gene_list, str): ## Provided gene list is a string, NOT a file
                 
