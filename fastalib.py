@@ -328,9 +328,10 @@ class FASTA:
             if ncbi_tsa_submission == True:
                 extracted_sequences = []
                 
-                for fasta_sequence in subsequences and if len(fasta_sequence.seq) >= 200:
-                    extracted_sequences.append(fasta_sequence)
-                    return extracted_sequences
+                for fasta_sequence in subsequences:
+                    if len(fasta_sequence.seq) >= 200:
+                        extracted_sequences.append(fasta_sequence)
+                        return extracted_sequences
                 
             else:    
                 return subsequences
@@ -341,9 +342,10 @@ class FASTA:
             if ncbi_tsa_submission == True:
                 kept_sequences = []
                 
-                for fasta_sequence in intact_sequences_r and if len(fasta_sequence.seq) >= 200:
-                    kept_sequences.append(fasta_sequence)
-                    return kept_sequences
+                for fasta_sequence in intact_sequences_r:
+                    if len(fasta_sequence.seq) >= 200:
+                        kept_sequences.append(fasta_sequence)
+                        return kept_sequences
                 
             else:
                 return intact_sequences_r
@@ -353,9 +355,10 @@ class FASTA:
             if ncbi_tsa_submission == True:
                 kept_sequences = []              
 
-                for fasta_sequence in intact_sequences and if len(fasta_sequence.seq) >= 200:
-                    kept_sequences.append(fasta_sequence)
-                    return kept_sequences
+                for fasta_sequence in intact_sequences:
+                    if len(fasta_sequence.seq) >= 200:
+                        kept_sequences.append(fasta_sequence)
+                        return kept_sequences
                 
             else:
                 return intact_sequences
