@@ -129,7 +129,7 @@ class FASTA:
             fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
             lst.append (fasta_size)
             
-        sorted_list = natsorted(lst, key=lambda x: x.split('\t')[1], reverse=False) # sort based on sequence length
+        sorted_list = natsorted(lst, key=lambda x: x.split('\t')[1]) # sort based on sequence length
         
         return sorted_list
 
