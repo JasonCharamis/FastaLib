@@ -90,7 +90,7 @@ class FASTA:
         for seqids, sequences in entries.items():
             fasta_instance = FASTA(seqids, sequences)
             fasta_instances.append(fasta_instance)
-            
+
         return fasta_instances
     
 
@@ -265,13 +265,12 @@ class FASTA:
                         if re.search(gene.split('\t')[0], fasta_instance.id):
                             matches[fasta_instance.id][gene.split('\t')[1]][gene.split('\t')[2]] = fasta_instance.seq
                     elif len(gene.split('\t')) == 1:
-                        if re.search(gene, fasta_instance.id):
-                            matches[fasta_instance.id] = fasta_instance.seq
+                        if re.search( gene.strip('\n'), fasta_instance.id):
+                            matches[fasta_instance.id]["1"][len(fasta_instance.seq)] = fasta_instance.seq
                     else:
-                        print (f'Please check the format of your input {gene_list} file: neither 1 nor 3 columns (geneid, start, end position) .')
-
+                        print (f"Please check your file {gene_list} format.")
+                            
             elif isinstance(gene_list, str): ## Provided gene list is a string, NOT a file
-                
                 if re.search(gene_list, fasta_instance.id):
                     if start_position == "": ## If no start and/or end positions are provided, return the entire sequence
                         start_position = 1
@@ -290,9 +289,9 @@ class FASTA:
                     for start_positions, end_positions in positions.items():
                         start_position = int(start_positions)
 
-                        for end_positions, sequences in end_positions.items():
-                            end_position = int(end_positions)
-                            sequence = str(sequences)                          
+                    for end_positions, sequences in end_positions.items():
+                        end_position = int(end_positions)
+                        sequence = str(sequences)                          
         
                 if start_position and end_position and sequence: 
                     if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
