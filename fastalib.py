@@ -232,7 +232,7 @@ class FASTA:
             print ( "Provided fasta file is empty.")
 
             
-    def extract_subsequences (fasta_file, gene_list, from_file, start_position="", end_position="", extract = True, ncbi_tsa_submission = False) -> list:
+    def extract_subsequences (fasta_file, gene_list, coords_from_file, start_position="", end_position="", extract = True, ncbi_tsa_submission = False) -> list:
 
         '''
         Extracts or removes sequence(s) and subsequence(s) from a fasta file
@@ -240,7 +240,7 @@ class FASTA:
         Parameters:
           - fasta_file (str): Path to the FASTA file.
           - gene_list (str): Name of file with provided sequence(s).
-          - from_file(bool): True if the sequences' names, start and end positions are provided in a file. False if sequence name, start and position are provided as a string.
+          - coords_from_file(bool): True if the sequences' names, start and end positions are provided in a file. False if sequence name, start and position are provided as a string.
           - start_position(int): Start position in the sequence. Default: empty_string
           - end_position(int): End position in the sequence. Default: empty_string
           - extract(bool): Extract or remove subsequence(s). Default: extract=True
@@ -260,9 +260,9 @@ class FASTA:
         
         for fasta_instance in fasta_instances: ## Find matches between the fasta file and the provided gene list, which is either a file or a string, and add them into a dictionary
             if os.path.isfile(gene_list):
-                for gene in isfile(gene_list):
+                for gene in isfile(gene_list):                   
                     if len(gene.split('\t')) == 3:
-                        if re.search(gene.split('\t')[0], fasta_instance.id):
+                        if re.search(gene.strip('\n').split('\t')[0], fasta_instance.id):
                             matches[fasta_instance.id][gene.split('\t')[1]][gene.split('\t')[2]] = fasta_instance.seq
                     elif len(gene.split('\t')) == 1:
                         if re.search( gene.strip('\n'), fasta_instance.id):
@@ -300,23 +300,28 @@ class FASTA:
                             subsequences.append( FASTA(matching_seq, subsequence) )
                                          
                         else: ## Options to remove sequence(s) and subsequence(s)
-                            if start_position > 1: 
+
+                            if not start_position == 1 and not end_position == len(sequence): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
                                 start_pos = start_position - 1
-                
-                            if end_position < len(sequence):
                                 end_pos = end_position + 1
                                 
-                            if not start_pos == 1 and not end_pos == len(sequence): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
                                 subsequence = sequence[:start_pos] + sequence[end_pos:]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                            elif not start_pos == 1 and end_pos == len(sequence): ## If start is in the middle and end position is last position in sequence, keep only up to the start
-                                subsequence = sequence[:start_pos]
-                                intact_sequences_r.append( FASTA(matching_seq, subsequence) ) 
+                                print ( f"Removing {start_pos} - {end_pos} from {matching_seq}" )
 
-                            elif start_pos == 1 and not end_pos == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
+                            elif not start_position == 1 and end_position == len(sequence): ## If start is in the middle and end position is last position in sequence, keep only up to the start
+                                subsequence = sequence[:start_pos]
+                                intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+
+                                print ( f"Removing {start_position} - {end_position} from {matching_seq}" )
+
+                            elif start_position == 1 and not end_position == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
                                 subsequence = sequence[1:end_pos]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+                                print ( f"Removing {start_position} - {end_position} from {matching_seq}" )
+
+                               
                     else:
                         print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
                 else:
@@ -443,7 +448,7 @@ def parse_arguments():
     parser.add_argument('-g','--gene_list', type=str, help='User-provided list of sequence IDs to extract, remove or replace with new in FASTA file.')
     parser.add_argument('-st','--start_position', type=str, required = False, help='Start position to extract FASTA sequences.')
     parser.add_argument('-end','--end_position', type=str, required = False, help='End position to extract FASTA sequences.')
-    parser.add_argument('-ff','--from_file', action="store_true", help='Option to get start and end positions from file.')
+    parser.add_argument('-cff','--coords_from_file', action="store_true", help='Option to get start and end positions from file.')
     parser.add_argument('-ncbi','--ncbi_tsa_submission', action="store_true", help='Performcs checks for NCBI TSA submissions.')
 
     ## replace sequence names; original gene ids should be associated with new names
@@ -493,46 +498,46 @@ def main():
 
         elif args.extract:
             if args.gene_list:
-                if args.from_file:
+                if args.coords_from_file:
                     if args.ncbi_tsa_submission:
                         with open(f"{inp}.fsa", "w") as f:
-                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, ncbi_tsa_submission = True, from_file = True, extract = True):
+                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, ncbi_tsa_submission = True, coords_from_file = True, extract = True):
                                 print ( out, file = f )
                     else:
                         with open(f"{inp}.extracted.from_{args.gene_list}.fasta", "w") as f:
-                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, from_file = True, extract = True):
+                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, coords_from_file = True, extract = True):
                                 print ( out, file = f )
                 else:
                     with open(f"{inp}.extracted.fasta", "w") as f:
                         if args.ncbi_tsa_submission:
                             with open(f"{inp}.fsa", "w") as f:
-                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, from_file = False, extract = True):
+                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, coords_from_file = False, extract = True):
                                     print ( out, file = f )
                         else:
                             with open(f"{inp}.extracted.from_{args.gene_list}.fasta", "w") as f:
-                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, from_file = False, extract = True):
+                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, coords_from_file = False, extract = True):
                                     print ( out, file = f )
         elif args.remove:
             if args.gene_list:
-                if args.from_file:
+                if args.coords_from_file:
                     if args.ncbi_tsa_submission:
                         with open(f"{inp}.fsa", "w") as f:
-                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, ncbi_tsa_submission = True, from_file = True, extract = False):
+                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, ncbi_tsa_submission = True, coords_from_file = True, extract = False):
                                 print ( out, file = f )
 
                     else:
                         with open(f"{inp}.removed.from_{args.gene_list}.fasta", "w") as f:
-                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, from_file = True, extract = False):
+                            for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, coords_from_file = True, extract = False):
                                 print ( out, file = f )
                 else:
                     with open(f"{inp}.removed.fasta", "w") as f:
                         if args.ncbi_tsa_submission:
                             with open(f"{inp}.fsa", "w") as f:
-                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, from_file = False, extract = False):
+                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, coords_from_file = False, extract = False):
                                     print ( out, file = f )
                         else:
                             with open(f"{inp}.removed.{args.gene_list}.fasta", "w") as f:
-                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, from_file = False, extract = False):
+                                for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene_list = args.gene_list, start_position = args.start_position, end_position = args.end_position, coords_from_file = False, extract = False):
                                     print ( out, file = f )
             else:
                 print ( "Please provide a gene list.")
