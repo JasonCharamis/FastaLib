@@ -484,7 +484,7 @@ def main():
         if re.search(".fsa", args.fasta):
             if args.ncbi_tsa_submission:
                 print (f"Renaming {args.fasta} file because .fsa suffix already exists!")
-                os.system("rename 's/.fsa/fasta/' args.fasta")
+                os.system("rename 's/.fsa/.fasta/' args.fasta")
             
         inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$","",args.fasta)
 
