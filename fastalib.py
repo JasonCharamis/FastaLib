@@ -308,18 +308,19 @@ class FASTA:
                                 subsequence = sequence[:start_pos] + sequence[end_pos:]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                                print ( f"Removing {start_pos} - {end_pos} from {matching_seq}" )
+                                print ( f"Removed {start_pos} - {end_pos} from {matching_seq}" )
 
                             elif not start_position == 1 and end_position == len(sequence): ## If start is in the middle and end position is last position in sequence, keep only up to the start
                                 subsequence = sequence[:start_pos]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                                print ( f"Removing {start_position} - {end_position} from {matching_seq}" )
+                                print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
 
                             elif start_position == 1 and not end_position == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
                                 subsequence = sequence[1:end_pos]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
-                                print ( f"Removing {start_position} - {end_position} from {matching_seq}" )
+
+                                print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
 
                                
                     else:
