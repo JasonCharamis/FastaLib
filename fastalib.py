@@ -321,8 +321,7 @@ class FASTA:
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
                                 print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
-
-                               
+                                
                     else:
                         print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
                 else:
