@@ -296,9 +296,11 @@ class FASTA:
                 if start_position and end_position and sequence: 
                     if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
                         if extract:  ## Options to extract sequence(s) and subsequence(s)
-                            subsequence = sequence[start_position:end_position]
+                            subsequence = sequence[start_position:end_position]                          
                             subsequences.append( FASTA(matching_seq, subsequence) )
-                                         
+
+                            print ( f"Extracted {start_pos} - {end_pos} from {matching_seq}" )
+
                         else: ## Options to remove sequence(s) and subsequence(s)
 
                             if not start_position == 1 and not end_position == len(sequence): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
@@ -483,7 +485,7 @@ def main():
 
         if re.search(".fsa", args.fasta):
             if args.ncbi_tsa_submission:
-                print (f"Renaming {args.fasta} file because .fsa suffix already exists!")
+                print (f"Renaming {args.fasta} file because .fsa suffix already exists and would cause an error!")
                 os.system("rename 's/.fsa/.fasta/' args.fasta")
             
         inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$","",args.fasta)
