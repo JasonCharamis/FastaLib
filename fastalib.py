@@ -276,7 +276,7 @@ class FASTA:
                         start_position = 1
                     if end_position == "":
                         end_position = len(fasta_instance.seq)
-                        matches[fasta_instance.id][start_position][end_position] = fasta_instance.seq
+                    matches[fasta_instance.id][start_position][end_position] = fasta_instance.seq
             else:
                 print ('Provided file is neither a FILE nor a STRING. Please check your input.')
                 return fasta_instances
