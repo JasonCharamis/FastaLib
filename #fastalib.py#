@@ -534,7 +534,7 @@ def main():
                                 for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene = args.gene, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, coords_from_file = False, extract = True):
                                     print ( out, file = f )
                         else:
-                            with open(f"{inp}.extracted.{args.gene}.fasta", "w") as f:
+                            with open(f"{inp}.{args.gene}.fasta", "w") as f:
                                 for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene = args.gene, start_position = args.start_position, end_position = args.end_position, coords_from_file = False, extract = True):
                                     print ( out, file = f )
         elif args.remove:
@@ -546,7 +546,7 @@ def main():
                                 print ( out, file = f )
 
                     else:
-                        with open(f"{inp}.removed.{args.gene}.fasta", "w") as f:
+                        with open(f"{inp}.removed.from_{args.gene}.fasta", "w") as f:
                             for out in FASTA.extract_subsequences(fasta_file = args.fasta, gene = args.gene, coords_from_file = True, extract = False):
                                 print ( out, file = f )
                 else:
