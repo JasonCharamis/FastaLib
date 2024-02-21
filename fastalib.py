@@ -9,10 +9,9 @@ import re
 from collections import defaultdict
 
 
-def isfile ( sequence, delimiter = '\t' ):
+def isfile ( input_file, delimiter = '\t' ):
     try:
-        with open ( sequence, "r" ) as file:
-            num_columns = len(file.readline().split(delimiter)) ## Assuming that each line has the same number of columns            
+        with open ( input_file, "r" ) as file:
             lines = file.readlines()
             
             instances = []
@@ -300,7 +299,7 @@ class FASTA:
 
                     for end_positions, sequences in end_positions.items():
                         end_position = int(end_positions)
-                        sequence_f = str(sequences)                          
+                        sequence_f = str(sequences)
         
                 if start_position and end_position and sequence_f: 
                     if 1 <= start_position <= len(sequence_f) and 1 <= end_position <= len(sequence_f):
@@ -327,7 +326,7 @@ class FASTA:
                             print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
                             
                     else:
-                        print(f"Requested range {start_position} - {end_position} not present in {fasta_instance.id}")
+                        print(f"Requested range {start_position} - {end_position} not present in {matching_seq}")
                 else:
                     print (f"Start and end positions not provided for {matching_seq}.")
         else:
@@ -335,7 +334,7 @@ class FASTA:
 
             if ncbi_tsa_submission == True:
                 fasta_sequences = []
-                
+                 
                 for fasta_instance in fasta_instances:
                     if len(fasta_instance.seq) >= 200:
                         fasta_sequences.append(fasta_instance)
@@ -438,6 +437,23 @@ class FASTA:
             return None
         
 
+
+    def compare_fasta_files ( fasta_file1, fasta_file2 ) -> list:
+
+        def _return_fasta_ids(fasta_instance):
+            return fasta_instance.id
+    
+
+        fasta_instances1 = set(sorted(FASTA.fasta_parser(fasta_file1), key=_return_fasta_ids))
+        fasta_instances2 = set(sorted(FASTA.fasta_parser(fasta_file2), key=_return_fasta_ids))
+
+        common_genes = fasta_instances1.intersection(fasta_instances2)
+        uncommon_genes = list(fasta_instances1.symmetric_difference(fasta_instances2))
+
+        for f in uncommon_genes:
+            print ( f )
+        
+
         
 ## Implementation as a main script ##
 
@@ -471,6 +487,10 @@ def parse_arguments():
     parser.add_argument('-pos','--position', action="store_true", help='Option to return requested position number of FASTA sequence.')
     parser.add_argument('-num','--number', type=int, help='Position number to requested sequence from a FASTA sequence.')
     parser.add_argument('-len','--length', type=int, help='Length to add to position number to requested sequence from a FASTA sequence. e.g. 280 + length')
+
+    ## compare fasta files
+    parser.add_argument('-cmp','--compare', action="store_true", help='Option to compare FASTA files in pairs.')
+    parser.add_argument('-f2','--fasta_file2', type=str, help='Second FASTA file to compare when the --compare option is enabled.')
 
     args = parser.parse_args()
 
@@ -567,14 +587,22 @@ def main():
                         print ( "Requested site number", args.number, "in", args.sequence, "is", args.end==" " )
                         print ( FASTA.check_position ( args.fasta, args.sequence, args.number, args.length if args.length else 0 ) )
                         
+                    else:
+                        print ("Please provide a position number to return.")
+
                 else:
-                    print ("Please provide a position number to return.")
+                    print ( "Please provide the name of the sequence to search for returning the position number.")                        
+
+        elif args.compare:
+            if args.fasta_file2:
+                print ( FASTA.compare_fasta_files ( args.fasta, args.fasta_file2 ) )
             else:
-                print ( "Please provide the name of the sequence to search for returning the position number.")                        
+                print ( 'Please provide a second FASTA file to compare using the --fasta_file2 argument.')
+                        
         else:
             print("Please select a potential FASTA operation.")
     else:
         print ( "Please provide the input fasta file.")
-        
+
 if __name__ == "__main__":
     main()
