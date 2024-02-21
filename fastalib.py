@@ -107,38 +107,37 @@ class FASTA:
                 out.write ( str(fasta_instance) )
 
     
-    def fasta_sizer ( fasta_file, sequence="" ) -> list:
-        
-        '''
-        Size and sort FASTA sequences based on sequence length.
-
-        Parameters:
-        - fasta_file (str): Path to the FASTA file.
-
-        Returns:
-        - list: Sorted list of sequence sizes.
-        
-        '''
-        
+    def fasta_sizer(fasta_file, sequence=""):
         lst = []
+        selected_lst = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
-        
+
+        if sequence is not None and not sequence == "":
+            sequence_p = re.compile(sequence)
+        else:
+            sequence_p = None
+
         for fasta_instance in fasta_instances:
-            
-            if re.search("\w", sequence ):
-                if re.search ( sequence, fasta_instance.id ):
-                    return '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
 
+            if sequence_p is not None:
+                if re.search(sequence_p, fasta_instance.id):
+                    selected_fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
+                    selected_lst.append(selected_fasta_size)
+                else:
+                    print(f"The requested {sequence} does not exist in the FASTA file. Please check your input.")
+                    return
             else:
-                print ( f"The requested {sequence} does not exist in the FASTA file. Please check your input.")
-                return
+                fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
+                lst.append(fasta_size)
 
-        else: ## If no specific sequence is requested, will return the size of all sequences in fasta file
-            fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
-            lst.append (fasta_size)
+        if len(selected_lst) > 0:
+            sorted_list = natsorted(selected_lst, key=lambda x: x.split('\t')[1])
+            print('Printing sizes of selected sequences in the provided FASTA file.')
+            return sorted_list
 
-        if len(lst) > 0:
-            sorted_list = natsorted(lst, key=lambda x: x.split('\t')[1]) # sort based on sequence length
+        elif len(lst) > 0:
+            sorted_list = natsorted(lst, key=lambda x: x.split('\t')[1])
+            print('Printing sizes of all sequences in the provided FASTA file.')
             return sorted_list
 
        
