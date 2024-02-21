@@ -269,17 +269,16 @@ class FASTA:
         
         for fasta_instance in fasta_instances: ## Find matches between the fasta file and the provided sequence list, which is either a file or a string, and add them into a dictionary
             if os.path.isfile(sequence):
-                for sequence in isfile(sequence):                   
-                    if len(sequence.split('\t')) == 3:
-                        if re.search(sequence.strip('\n').split('\t')[0], fasta_instance.id):
-                            matches[fasta_instance.id][sequence.split('\t')[1]][sequence.split('\t')[2]] = fasta_instance.seq
-                    elif len(sequence.split('\t')) == 1:
-                        if re.search( sequence.strip('\n'), fasta_instance.id):
-                            matches[fasta_instance.id]["1"][len(fasta_instance.seq)] = fasta_instance.seq
-                            print ( matches )
+                for sequence_file in isfile(sequence):                   
+                    if len(sequence_file.split('\t')) == 3:
+                        if re.search(sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
+                            matches[fasta_instance.id][sequence_file.split('\t')[1]][sequence_file.split('\t')[2]] = fasta_instance.seq
+                    elif len(sequence_file.strip('\n').split('\t')) == 1:
+                        if re.search( sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
+                            matches[fasta_instance.id][1][len(fasta_instance.seq)] = fasta_instance.seq
                     else:
-                        print (f"Please check your file {sequence} format.")
-                            
+                        print (f"Please check your file {sequence_file} format.")
+                        
             elif isinstance(sequence, str): ## Provided sequence list is a string, NOT a file
                 if re.search(sequence, fasta_instance.id):
                     if start_position == "": ## If no start and/or end positions are provided, return the entire sequence
@@ -291,7 +290,7 @@ class FASTA:
                 print ('Provided file is neither a FILE nor a STRING. Please check your input.')
                 return fasta_instances
 
-        if len(matches) > 0: ## If matches are found, extract or remove entire sequence(s) or subsequence(s) based on user-provided specifications            
+        if len(matches) > 0: ## If matches are found, extract or remove entire sequence(s) or subsequence(s) based on user-provided specifications
             intact_sequences = [fasta_instance for fasta_instance in fasta_instances if fasta_instance.id not in matches.keys()] ## Creates a list with all sequences NOT matching the sequence list ONCE. Isolates the sequences we want to remove from the file.
                     
             for matching_seq, positions in matches.items(): ## Create dictionaries to save the fasta ID, start, end positions and sequence of matching sequences.
@@ -301,10 +300,10 @@ class FASTA:
 
                     for end_positions, sequences in end_positions.items():
                         end_position = int(end_positions)
-                        sequence = str(sequences)                          
+                        sequence_f = str(sequences)                          
         
-                if start_position and end_position and sequence: 
-                    if 1 <= start_position <= len(sequence) and 1 <= end_position <= len(sequence):
+                if start_position and end_position and sequence_f: 
+                    if 1 <= start_position <= len(sequence_f) and 1 <= end_position <= len(sequence_f):
                         if extract:  ## Options to extract sequence(s) and subsequence(s)
                             subsequence = sequence[start_position:end_position]                          
                             subsequences.append( FASTA(matching_seq, subsequence) )
@@ -313,16 +312,16 @@ class FASTA:
 
                         else: ## Options to remove sequence(s) and subsequence(s)
 
-                            if not start_position == 1 and not end_position == len(sequence): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
-                                subsequence = sequence[:start_position-1] + sequence[end_position+1:]
+                            if not start_position == 1 and not end_position == len(sequence_f): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
+                                subsequence = sequence[:start_position-1] + sequence_f[end_position+1:]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                            elif start_position == 1 and not end_position == len(sequence): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
-                                subsequence = sequence[end_position+1:]
+                            elif start_position == 1 and not end_position == len(sequence_f): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
+                                subsequence = sequence_f[end_position+1:]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                            elif not start_position == 1 and end_position == len(sequence): ## If start is in the middle and end position is last position in sequence, keep only up to the start
-                                subsequence = sequence[:start_position-1]
+                            elif not start_position == 1 and end_position == len(sequence_f): ## If start is in the middle and end position is last position in sequence, keep only up to the start
+                                subsequence = sequence_f[:start_position-1]
                                 intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
                             print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
