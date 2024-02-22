@@ -310,20 +310,26 @@ class FASTA:
 
                         else: ## Options to remove sequence(s) and subsequence(s)
 
-                            if not start_position == 1 and not end_position == len(sequence_f): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
-                                subsequence = sequence[:start_position-1] + sequence_f[end_position+1:]
-                                intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+                            if start_position == 1 and end_position == len(sequence_f):
+                                print ( f"Removed entire sequence {matching_seq}" )
+                                continue
 
-                            elif start_position == 1 and not end_position == len(sequence_f): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
-                                subsequence = sequence_f[end_position+1:]
-                                intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+                            else:
 
-                            elif not start_position == 1 and end_position == len(sequence_f): ## If start is in the middle and end position is last position in sequence, keep only up to the start
-                                subsequence = sequence_f[:start_position-1]
-                                intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+                                if not start_position == 1 and not end_position == len(sequence_f): ## If start and end position are in the middle of the sequence, collapse the subsequence and merge the flanking regions.
+                                    subsequence = sequence[:start_position-1] + sequence_f[end_position+1:]
+                                    intact_sequences_r.append( FASTA(matching_seq, subsequence) )
 
-                            print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
-                            
+                                elif start_position == 1 and not end_position == len(sequence_f): ## If start position is 1 and end position is in the middle, keep sequence from start to the provided end position
+                                    subsequence = sequence_f[end_position+1:]
+                                    intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+                                    
+                                elif not start_position == 1 and end_position == len(sequence_f): ## If start is in the middle and end position is last position in sequence, keep only up to the start
+                                    subsequence = sequence_f[:start_position-1]
+                                    intact_sequences_r.append( FASTA(matching_seq, subsequence) )
+
+                                print ( f"Removed {start_position} - {end_position} from {matching_seq}" )
+                                
                     else:
                         print(f"Requested range {start_position} - {end_position} not present in {matching_seq}")
                 else:
@@ -436,23 +442,6 @@ class FASTA:
             return None
         
 
-
-    def compare_fasta_files ( fasta_file1, fasta_file2 ) -> list:
-
-        def _return_fasta_ids(fasta_instance):
-            return fasta_instance.id
-    
-
-        fasta_instances1 = set(sorted(FASTA.fasta_parser(fasta_file1), key=_return_fasta_ids))
-        fasta_instances2 = set(sorted(FASTA.fasta_parser(fasta_file2), key=_return_fasta_ids))
-
-        common_genes = fasta_instances1.intersection(fasta_instances2)
-        uncommon_genes = list(fasta_instances1.symmetric_difference(fasta_instances2))
-
-        for f in uncommon_genes:
-            print ( f )
-        
-
         
 ## Implementation as a main script ##
 
@@ -486,10 +475,6 @@ def parse_arguments():
     parser.add_argument('-pos','--position', action="store_true", help='Option to return requested position number of FASTA sequence.')
     parser.add_argument('-num','--number', type=int, help='Position number to requested sequence from a FASTA sequence.')
     parser.add_argument('-len','--length', type=int, help='Length to add to position number to requested sequence from a FASTA sequence. e.g. 280 + length')
-
-    ## compare fasta files
-    parser.add_argument('-cmp','--compare', action="store_true", help='Option to compare FASTA files in pairs.')
-    parser.add_argument('-f2','--fasta_file2', type=str, help='Second FASTA file to compare when the --compare option is enabled.')
 
     args = parser.parse_args()
 
@@ -590,14 +575,7 @@ def main():
                         print ("Please provide a position number to return.")
 
                 else:
-                    print ( "Please provide the name of the sequence to search for returning the position number.")                        
-
-        elif args.compare:
-            if args.fasta_file2:
-                print ( FASTA.compare_fasta_files ( args.fasta, args.fasta_file2 ) )
-            else:
-                print ( 'Please provide a second FASTA file to compare using the --fasta_file2 argument.')
-                        
+                    print ( "Please provide the name of the sequence to search for returning the position number.")                                                
         else:
             print("Please select a potential FASTA operation.")
     else:
