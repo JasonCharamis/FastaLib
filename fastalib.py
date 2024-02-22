@@ -242,15 +242,16 @@ class FASTA:
     def extract_subsequences (fasta_file, sequence, start_position="", end_position="", extract = True, ncbi_tsa_submission = False) -> list:
 
         '''
-        Extracts or removes sequence(s) and subsequence(s) from a fasta file
+        Extracts or removes sequence(s) and subsequence(s) from a fasta file.
+        Checks each sequence instance independently and if start or end position for removing the sequences or subsequences are not provided, it will remove the entire sequence.
 
         Parameters:
           - fasta_file (str): Path to the FASTA file.
           - sequence (str): Name of file with provided sequence(s).
-          - coords_from_file(bool): True if the sequences' names, start and end positions are provided in a file. False if sequence name, start and position are provided as a string.
-          - start_position(int): Start position in the sequence. Default: empty_string
-          - end_position(int): End position in the sequence. Default: empty_string
+          - start_position(int): Start position in the sequence. If no start_position is provided, 1 will be used as default.
+          - end_position(int): End position in the sequence. If no start_position is provided, length of sequence will be used as default.
           - extract(bool): Extract or remove subsequence(s). Default: extract=True
+          - ncbi_tsa_submission(bool): Option to make checks for NCBI TSA submission.
  
         Returns:
           - list: List of sequences based on options to extract or remove entire sequence(s) and subsequence(s).
