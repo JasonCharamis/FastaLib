@@ -1,4 +1,4 @@
-
+ 
 #!/usr/bin python3
 
 import os
@@ -106,26 +106,18 @@ class FASTA:
             with open ( fasta_instance.id, "w" ) as out:
                 out.write ( str(fasta_instance) )
 
-    
-    def fasta_sizer(fasta_file, sequence=""):
+                
+    def fasta_sizer(fasta_file, sequence_id = None):
         lst = []
         selected_lst = []
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
-        if sequence is not None and not sequence == "":
-            sequence_p = re.compile(sequence)
-        else:
-            sequence_p = None
-
-        for fasta_instance in fasta_instances:
-
-            if sequence_p is not None:
-                if re.search(sequence_p, fasta_instance.id):
-                    selected_fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
-                    selected_lst.append(selected_fasta_size)
-                else:
-                    print(f"The requested {sequence} does not exist in the FASTA file. Please check your input.")
-                    return
+        if sequence_id is not None:
+            if sequence_id != "":
+                selected_lst = ['\t'.join([fasta_instance.id, str(len(fasta_instance.seq))]) for fasta_instance in fasta_instances if re.search(sequence_id, fasta_instance.id)]
+                
+                if not selected_lst:
+                    print(f"The requested {sequence_id} does not exist in the FASTA file. Please check your input.")
             else:
                 fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
                 lst.append(fasta_size)
@@ -512,12 +504,13 @@ def main():
 
         elif args.size:
             if args.sequence:
-                print ( FASTA.fasta_sizer ( args.fasta, sequence = args.sequence ) )
+                for out in FASTA.fasta_sizer ( args.fasta, sequence_id = args.sequence ):
+                    print ( out )
             else:
                 print ( "No specific sequence ID was provided. Will print the sizes of all sequences in FASTA file.")
                 
                 with open(f"{inp}.fasta.sizes", "w") as f:
-                    for out in FASTA.fasta_sizer(args.fasta, sequence = args.sequence):
+                    for out in FASTA.fasta_sizer(args.fasta ):
                         print ( out, file = f )
 
         elif args.extract:
