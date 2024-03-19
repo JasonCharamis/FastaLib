@@ -116,15 +116,21 @@ class FASTA:
                                   if re.search(sequence_id, instance.id)]
             
             if selected_sequences:
+                names = []
+                names.append( x.split('\t')[0] for x in selected_sequences )
                 sorted_sequences = natsorted(selected_sequences, key=lambda x: x.split('\t')[1])
-                print('Printing sizes of selected sequences in the provided FASTA file.')
+                print(f'Printing sizes of selected sequences {names} in {fasta_file}.')
                 
             else:
                 print(f"The requested {sequence_id} does not exist in the FASTA file. Please check your input.")
+                
         else:
             all_sequences = ['\t'.join([instance.id, str(len(instance.seq))])
                              for instance in fasta_instances]
+            
             sorted_sequences = natsorted(all_sequences, key=lambda x: x.split('\t')[1])
+            
+            print(f'Printing sizes of all sequences in {fasta_file}.')
 
         if sorted_sequences:
             if total_size == True:
@@ -133,7 +139,7 @@ class FASTA:
             else:
                 return ( sorted_sequences )
         else:
-            print("The FASTA file is empty or does not contain any sequences.")
+            print(f"The FASTA file is empty or does not contain any of the specified sequences in {sequence_id}.")
             return []
 
        
