@@ -107,30 +107,34 @@ class FASTA:
                 out.write ( str(fasta_instance) )
 
                 
-    def fasta_sizer(fasta_file, sequence_id = None):
-        lst = []
-        selected_lst = []
+    def fasta_sizer(fasta_file, sequence_id="", total_size = False ):
         fasta_instances = FASTA.fasta_parser(fasta_file)
 
-        if sequence_id is not None:
-            if sequence_id != "":
-                selected_lst = ['\t'.join([fasta_instance.id, str(len(fasta_instance.seq))]) for fasta_instance in fasta_instances if re.search(sequence_id, fasta_instance.id)]
+        if sequence_id:
+            selected_sequences = ['\t'.join([instance.id, str(len(instance.seq))])
+                                  for instance in fasta_instances
+                                  if re.search(sequence_id, instance.id)]
+            
+            if selected_sequences:
+                sorted_sequences = natsorted(selected_sequences, key=lambda x: x.split('\t')[1])
+                print('Printing sizes of selected sequences in the provided FASTA file.')
                 
-                if not selected_lst:
-                    print(f"The requested {sequence_id} does not exist in the FASTA file. Please check your input.")
             else:
-                fasta_size = '\t'.join([fasta_instance.id, str(len(fasta_instance.seq))])
-                lst.append(fasta_size)
+                print(f"The requested {sequence_id} does not exist in the FASTA file. Please check your input.")
+        else:
+            all_sequences = ['\t'.join([instance.id, str(len(instance.seq))])
+                             for instance in fasta_instances]
+            sorted_sequences = natsorted(all_sequences, key=lambda x: x.split('\t')[1])
 
-        if len(selected_lst) > 0:
-            sorted_list = natsorted(selected_lst, key=lambda x: x.split('\t')[1])
-            print('Printing sizes of selected sequences in the provided FASTA file.')
-            return sorted_list
-
-        elif len(lst) > 0:
-            sorted_list = natsorted(lst, key=lambda x: x.split('\t')[1])
-            print('Printing sizes of all sequences in the provided FASTA file.')
-            return sorted_list
+        if sorted_sequences:
+            if total_size == True:
+                total_size = sum([int(x.split('\t')[1]) for x in sorted_sequences])
+                print (f"Total size: {total_size}")
+            else:
+                return ( sorted_sequences )
+        else:
+            print("The FASTA file is empty or does not contain any sequences.")
+            return []
 
        
     def replace_names ( fasta_file, sequence="", ncbi_tsa_submission = False ) -> list:
@@ -448,6 +452,7 @@ def parse_arguments():
 
     ## option to compute size of fasta sequences
     parser.add_argument('-s','--size', action="store_true", help='Option to print sizes of FASTA sequences.')
+    parser.add_argument('-t','--total_size', action="store_true", help='Option to print the sum/total size of provided FASTA sequences.')
 
     ## options to extract or remove sequences
     parser.add_argument('-seq','--sequence', type=str, help='User-provided string or list of sequence IDs to extract, remove or replace with new in FASTA file.')
@@ -503,15 +508,30 @@ def main():
             FASTA.output_one_by_one(args.fasta)
 
         elif args.size:
-            if args.sequence:
-                for out in FASTA.fasta_sizer ( args.fasta, sequence_id = args.sequence ):
-                    print ( out )
-            else:
+            if args.sequence == "":
                 print ( "No specific sequence ID was provided. Will print the sizes of all sequences in FASTA file.")
-                
+
                 with open(f"{inp}.fasta.sizes", "w") as f:
-                    for out in FASTA.fasta_sizer(args.fasta ):
+                    print ( FASTA.fasta_sizer( fasta_file = args.fasta, sequence_id = "" ), file = f )
+
+            else:
+                with open(f"{inp}.fasta.sizes", "w") as f:
+                    for out in FASTA.fasta_sizer ( fasta_file = args.fasta, sequence_id = args.sequence ):
                         print ( out, file = f )
+
+        elif args.total_size:
+            if args.size:
+                print ("Please select one of the two: --size or --total_size.")
+                sys.exit(1)
+                
+            elif args.sequence:
+                with open(f"{inp}.fasta.sizes", "w") as f:
+                    print ( FASTA.fasta_sizer( fasta_file = args.fasta, sequence_id = args.sequence, total_size = True ), file = f )
+
+            else:
+                with open(f"{inp}.fasta.sizes", "w") as f:
+                    print ( FASTA.fasta_sizer ( fasta_file = args.fasta, sequence_id = "", total_size = True ), file = f )
+                        
 
         elif args.extract:
             if args.sequence:
