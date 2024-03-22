@@ -6,6 +6,7 @@ from natsort import natsorted
 from xopen import xopen
 import argparse
 import re
+import pandas as pd
 from collections import defaultdict
 
 
@@ -67,7 +68,7 @@ class FASTA:
                 line = line.strip('\n')  # Remove newline character
 
                 if line.startswith('>'):
-                    seqid = re.sub("\s+", "_", line[1:])
+                    seqid = re.sub("\\s+", "_", line[1:])
                     seqid = re.sub("\r", "\n", line[1:])
                     sequence = ""
 
@@ -81,7 +82,7 @@ class FASTA:
                         print(f"Error: Seqid '{seqid}' has length greater than 50.")
                             
                 elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
-                    sequence += re.sub("\*$|\.$", "", re.sub("\W", "", line))
+                    sequence += re.sub("\\*$|\\.$", "", re.sub("\\W", "", line))
 
                     if seqid and sequence:
                         entries[seqid] = sequence
@@ -135,7 +136,17 @@ class FASTA:
         if sorted_sequences:
             if total_size == True:
                 total_size = sum([int(x.split('\t')[1]) for x in sorted_sequences])
-                print (f"Total size: {total_size}")
+
+                if total_size >= 1000000:
+                    mb = total_size/1000000
+                    print (f"Total size: {mb} MBs.")
+
+                elif total_size >= 1000:
+                    kb = total_size/1000
+                    print (f"Total size: {kb} KBs.")
+                    
+                else:                  
+                    print (f"Total size: {total_size} bp.")
             else:
                 return ( sorted_sequences )
         else:
@@ -275,7 +286,7 @@ class FASTA:
                         if re.search(sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
                             matches[fasta_instance.id][sequence_file.split('\t')[1]][sequence_file.split('\t')[2]] = fasta_instance.seq
                     elif len(sequence_file.strip('\n').split('\t')) == 1:
-                        if re.search( sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
+                        if re.search( sequence_file.strip('\n'), fasta_instance.id):
                             matches[fasta_instance.id][1][len(fasta_instance.seq)] = fasta_instance.seq
                     else:
                         print (f"Please check your file {sequence_file} format.")
@@ -443,7 +454,23 @@ class FASTA:
         else:
             print ( f"Requested sequence {sequence} does not exist in {fasta_file}" )
             return None
+
+
+    def compare_fasta_files ( fasta_list_f ):
+
+        names = []
         
+        with open (fasta_list_f, "r") as fasta_list:
+            for fasta_file in fasta_list:
+                names.append(fasta_file.strip('\n'))
+                
+                fasta_instances = FASTA.fasta_parser(fasta_file.strip('\n'))
+
+                all_elems = list(set().union(fasta_instance.id for fasta_instance in fasta_instances))
+                df = pd.DataFrame([[ids in fasta_instance.id for fasta_instance in fasta_instances] for ids in all_elems], columns=names, index=all_elems)
+
+        return df
+
 
         
 ## Implementation as a main script ##
@@ -480,6 +507,9 @@ def parse_arguments():
     parser.add_argument('-num','--number', type=int, help='Position number to requested sequence from a FASTA sequence.')
     parser.add_argument('-len','--length', type=int, help='Length to add to position number to requested sequence from a FASTA sequence. e.g. 280 + length')
 
+    parser.add_argument('-comp','--compare', action="store_true", help='Option to compare 2 or more fasta files in terms of common sequence IDs.')
+    parser.add_argument('-fst','--fasta_list', type=str, help='Lists of fasta files to compare their sequence IDs. Used only when --compare is provided.')
+
     args = parser.parse_args()
 
     if not any(vars(args).values()):
@@ -498,12 +528,15 @@ def main():
 
     if args.fasta:
 
-        if re.search(".fsa", args.fasta):
+        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$", "", args.fasta)
+
+        if args.compare or args.fasta_list:
+            print ("To compare a list of fasta files use the --compare and --fasta_list without the --fasta option.")
+
+        elif re.search(".fsa", args.fasta):
             if args.ncbi_tsa_submission:
                 print (f"Renaming {args.fasta} file because .fsa suffix already exists and would cause an error!")
                 os.system(f"rename 's/.fsa/.fasta/' {args.fasta}")
-            
-        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$","",args.fasta)
 
         if args.one_line:
             with open(f"{inp}.fasta.1l", "w") as f:
@@ -595,9 +628,17 @@ def main():
                         print ("Please provide a position number to return.")
 
                 else:
-                    print ( "Please provide the name of the sequence to search for returning the position number.")                                                
+                    print ( "Please provide the name of the sequence to search for returning the position number.")                                               
         else:
             print("Please select a potential FASTA operation.")
+
+            
+    elif args.compare:
+        if args.fasta_list:
+            print ( FASTA.compare_fasta_files( args.fasta_list ) )
+        else:
+            print ( 'Please provide a list of FASTA files to compare their sequence IDs.')
+            
     else:
         print ( "Please provide the input fasta file.")
 
