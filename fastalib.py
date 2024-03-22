@@ -40,7 +40,7 @@ class FASTA:
         return f">{self.id}\n{self.seq}"
     
 
-    def fasta_parser(fasta_file, sprint = False) -> list:
+    def fasta_parser(fasta_file, control = False, sprint = False) -> list:
 
         '''
 
@@ -78,8 +78,9 @@ class FASTA:
                     else:
                         encountered_ids.add(seqid)
 
-                    if len(seqid) > 50: # Check if seqid length is greater than 50
-                        print(f"Error: Seqid '{seqid}' has length greater than 50.")
+                    if control == True:
+                        if len(seqid) > 50: # Check if seqid length is greater than 50
+                            print(f"Error: Seqid '{seqid}' has length greater than 50.")
                             
                 elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
                     sequence += re.sub("\\*$|\\.$", "", re.sub("\\W", "", line))
@@ -286,7 +287,7 @@ class FASTA:
                         if re.search(sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
                             matches[fasta_instance.id][sequence_file.split('\t')[1]][sequence_file.split('\t')[2]] = fasta_instance.seq
                     elif len(sequence_file.strip('\n').split('\t')) == 1:
-                        if re.search( sequence_file.strip('\n'), fasta_instance.id):
+                        if re.search( sequence_file.strip('\n').split('\t')[0], fasta_instance.id):
                             matches[fasta_instance.id][1][len(fasta_instance.seq)] = fasta_instance.seq
                     else:
                         print (f"Please check your file {sequence_file} format.")
@@ -317,9 +318,9 @@ class FASTA:
                 if start_position and end_position and sequence_f: 
                     if 1 <= start_position <= len(sequence_f) and 1 <= end_position <= len(sequence_f):
                         if extract:  ## Options to extract sequence(s) and subsequence(s)
-                            subsequence = sequence[start_position:end_position]                          
+                            subsequence = sequence_f[start_position:end_position]
                             subsequences.append( FASTA(matching_seq, subsequence) )
-
+                            
                             print ( f"Extracted {start_position} - {end_position} from {matching_seq}" )
 
                         else: ## Options to remove sequence(s) and subsequence(s)
@@ -373,7 +374,7 @@ class FASTA:
                         extracted_sequences.append(fasta_sequence)
                         return extracted_sequences
                     
-            else:    
+            else:
                 return subsequences
 
             
@@ -528,7 +529,7 @@ def main():
 
     if args.fasta:
 
-        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$", "", args.fasta)
+        inp = re.sub (".aa$|.fa$|.faa$|.fna$|.fsa|.fasta$|.1l$", "", args.fasta)           
 
         if args.compare or args.fasta_list:
             print ("To compare a list of fasta files use the --compare and --fasta_list without the --fasta option.")
@@ -544,7 +545,10 @@ def main():
                     print ( out, file = f )
                     
         elif args.one_by_one:
-            FASTA.output_one_by_one(args.fasta)
+            if control:
+                FASTA.output_one_by_one(args.fasta, control = True)
+            else:
+                FASTA.output_one_by_one(args.fasta, control = False)
 
         elif args.size:
             if args.sequence == "":
@@ -576,11 +580,11 @@ def main():
             if args.sequence:
                 if args.ncbi_tsa_submission:
                     with open(f"{inp}.fsa", "w") as f:
-                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, ncbi_tsa_submission = True, extract = True):
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, extract = True):
                             print ( out, file = f )
                 else:
                     with open(f"{inp}.extracted.{args.sequence}.fasta", "w") as f:
-                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, extract = True):
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, start_position = args.start_position, end_position = args.end_position, extract = True):
                             print ( out, file = f )
             else:
                 print ( "Please provide a sequence ID or list of sequence IDs to extract (sub)sequence(s).")
@@ -589,11 +593,11 @@ def main():
             if args.sequence:
                 if args.ncbi_tsa_submission:
                     with open(f"{inp}.fsa", "w") as f:
-                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, ncbi_tsa_submission = True, extract = False):
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, start_position = args.start_position, end_position = args.end_position, ncbi_tsa_submission = True, extract = False):
                             print ( out, file = f )
                 else:
                     with open(f"{inp}.removed.{args.sequence}.fasta", "w") as f:
-                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, extract = False):
+                        for out in FASTA.extract_subsequences(fasta_file = args.fasta, sequence = args.sequence, start_position = args.start_position, end_position = args.end_position, extract = False):
                             print ( out, file = f )
             else:
                 print ( "Please provide a sequence ID or list of sequence IDs to remove (sub)sequence(s).")
