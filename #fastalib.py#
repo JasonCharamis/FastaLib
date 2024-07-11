@@ -1,4 +1,5 @@
-/bin python3
+ 
+#!/usr/bin python3
 
 import os
 from natsort import natsorted
@@ -396,7 +397,6 @@ class FASTA:
             else:
                 return intact_sequences
 
-        
 
     def check_position (fasta_file, sequence, position_number, length = 0) -> str:
 

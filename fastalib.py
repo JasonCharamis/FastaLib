@@ -134,25 +134,25 @@ class FASTA:
             
             print(f'Printing sizes of all sequences in {fasta_file}.')
 
-        if sorted_sequences:
-            if total_size == True:
-                total_size = sum([int(x.split('\t')[1]) for x in sorted_sequences])
+            if sorted_sequences:
+                if total_size == True:
+                    total_size = sum([int(x.split('\t')[1]) for x in sorted_sequences])
 
-                if total_size >= 1000000:
-                    mb = total_size/1000000
-                    print (f"Total size: {mb} MBs.")
+                    if total_size >= 1000000:
+                        mb = total_size/1000000
+                        print (f"Total size: {mb} MBs.")
 
-                elif total_size >= 1000:
-                    kb = total_size/1000
-                    print (f"Total size: {kb} KBs.")
+                    elif total_size >= 1000:
+                        kb = total_size/1000
+                        print (f"Total size: {kb} KBs.")
                     
-                else:                  
-                    print (f"Total size: {total_size} bp.")
+                    else:                  
+                        print (f"Total size: {total_size} bp.")
+                else:
+                    return ( sorted_sequences )
             else:
-                return ( sorted_sequences )
-        else:
-            print(f"The FASTA file is empty or does not contain any of the specified sequences in {sequence_id}.")
-            return []
+                print(f"The FASTA file is empty or does not contain any of the specified sequences in {sequence_id}.")
+                return []
 
        
     def replace_names ( fasta_file, sequence="", ncbi_tsa_submission = False ) -> list:
@@ -397,7 +397,6 @@ class FASTA:
             else:
                 return intact_sequences
 
-        
 
     def check_position (fasta_file, sequence, position_number, length = 0) -> str:
 
