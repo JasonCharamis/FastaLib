@@ -1,3 +1,4 @@
+
 #!/usr/bin python3
 
 import os
@@ -35,7 +36,7 @@ class FASTA:
     def __str__(self):
         return f">{self.id}\n{self.seq}"
 
-    def fasta_parser(fasta_file, control=False, sprint=False) -> list:
+    def fasta_parser(fasta_file, makeblastdb=False, sprint=False) -> list:
         """
 
         Parse a FASTA file and return a list of FASTA instances.
@@ -72,9 +73,10 @@ class FASTA:
                     else:
                         encountered_ids.add(seqid)
 
-                    if control == True:
+                    if makeblastdb == True:
                         if len(seqid) > 50:  # Check if seqid length is greater than 50
                             print(f"Error: Seqid '{seqid}' has length greater than 50.")
+                            seqid = seqid[:50]
 
                 elif not re.search("--|#", line):  # Ignore lines containing "--" or "#"
                     sequence += re.sub("\\W", "", line)
@@ -604,6 +606,12 @@ def parse_arguments():
         help="User-provided string or list of sequence IDs to extract, remove or replace with new in FASTA file.",
     )
     parser.add_argument(
+        "-blastdb",
+        "--makeblastdb",
+        action="store_true",
+        help="Option to keep the first 50 characters of the FASTA header (needed for makeblastdb)",
+    )
+    parser.add_argument(
         "-obo",
         "--one_by_one",
         action="store_true",
@@ -722,14 +730,18 @@ def main():
 
         if args.one_line:
             with open(f"{inp}.fasta.1l", "w") as f:
-                for out in FASTA.fasta_parser(args.fasta):
-                    print(out, file=f)
-
+                if args.makeblastdb:
+                    for out in FASTA.fasta_parser(args.fasta, makeblastdb=True):                       
+                        print(out, file=f)
+                else:
+                    for out in FASTA.fasta_parser(args.fasta, makeblastdb=True):                       
+                        print(out, file=f)
+                        
         elif args.one_by_one:
-            if control:
-                FASTA.output_one_by_one(args.fasta, control=True)
+            if args.makeblastdb:
+                FASTA.output_one_by_one(args.fasta, makeblastdb=True)
             else:
-                FASTA.output_one_by_one(args.fasta, control=False)
+                FASTA.output_one_by_one(args.fasta, makeblastdb=False)
 
         elif args.size:
             if args.sequence == "":
