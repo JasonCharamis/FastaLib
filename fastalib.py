@@ -152,9 +152,10 @@ class FASTA:
                 else:
                     if len(sorted_sequences) <= 10:
                         for s in sorted_sequences:
+                            print(f"Sequence header will be printed in STDOUT because 10 or less sequences were found in {fasta_file}.")
                             print(s)
-                            
-                    return sorted_sequences
+                    else:        
+                        return sorted_sequences
             else:
                 print(
                     f"The FASTA file is empty or does not contain any of the specified sequences in {sequence_id}."
@@ -748,22 +749,18 @@ def main():
                 FASTA.output_one_by_one(args.fasta, makeblastdb=False)
 
         elif args.size:
+            sequence_id = ""
             if args.sequence == "":
-                print(
-                    "No specific sequence ID was provided. Will print the sizes of all sequences in FASTA file."
-                )
-
-                with open(f"{inp}.fasta.sizes", "w") as f:
-                    print(
-                        FASTA.fasta_sizer(fasta_file=args.fasta, sequence_id=""), file=f
-                    )
-
+                print("No specific sequence ID was provided. Will print the sizes of all sequences in FASTA file.")
             else:
+                sequence_id = args.sequence
+
+            result = FASTA.fasta_sizer(fasta_file=args.fasta, sequence_id=sequence_id)
+            
+            if result is not None:
                 with open(f"{inp}.fasta.sizes", "w") as f:
-                    for out in FASTA.fasta_sizer(
-                        fasta_file=args.fasta, sequence_id=args.sequence
-                    ):
-                        print(out, file=f)
+                    print(result, file=f)
+            
 
         elif args.total_size:
             if args.size:
