@@ -151,8 +151,9 @@ class FASTA:
                         print(f"Total size: {total_size} bp.")
                 else:
                     if len(sorted_sequences) <= 10:
+                        print(f"Sequence header will be printed in STDOUT because 10 or less sequences were found in {fasta_file}.")
+                        
                         for s in sorted_sequences:
-                            print(f"Sequence header will be printed in STDOUT because 10 or less sequences were found in {fasta_file}.")
                             print(s)
                     else:        
                         return sorted_sequences
