@@ -150,6 +150,10 @@ class FASTA:
                     else:
                         print(f"Total size: {total_size} bp.")
                 else:
+                    if len(sorted_sequences) <= 10:
+                        for s in sorted_sequences:
+                            print(s)
+                            
                     return sorted_sequences
             else:
                 print(
